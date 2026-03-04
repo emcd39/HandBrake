@@ -134,11 +134,16 @@ jobs:
             libvorbis-dev \
             libtheora-dev \
             libsvtav1-dev \
-            libxml2-dev
+            libxml2-dev \
+            libdrm-dev \
+            librga2 \
+            librga-dev \
+            librockchip-mpp1 \
+            librockchip-mpp-dev
 
-      - name: Configure HandBrake GTK
+      - name: Configure HandBrake GTK with RKMPP
         run: |
-          ./configure --enable-gtk --force
+          ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake GTK

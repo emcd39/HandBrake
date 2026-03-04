@@ -1,0 +1,2 @@
+$(eval $(call import.MODULE.rules,RKMPP))
+$(eval $(call import.CONTRIB.rules,RKMPP))

@@ -1,0 +1,9 @@
+$(eval $(call import.MODULE.defs,RKMPP,rkmpp))
+$(eval $(call import.CONTRIB.defs,RKMPP))
+
+RKMPP.FETCH.url = https://github.com/rockchip-linux/mpp/archive/refs/tags/v1.5.0.tar.gz
+RKMPP.FETCH.sha256 = dummy
+
+RKMPP.CONFIGURE = $(TOUCH.exe) $@
+RKMPP.BUILD.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"
+RKMPP.INSTALL.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"

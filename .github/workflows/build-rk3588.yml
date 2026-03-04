@@ -79,7 +79,7 @@ jobs:
 
 build-gtk:
   runs-on: ubuntu-24.04-arm
-  if: github.event_name == 'push' || inputs.gtk == 'true'
+  if: "${{ github.event_name == 'push' || inputs.gtk == 'true' }}"
     steps:
       - name: Checkout HandBrake
         uses: actions/checkout@v4

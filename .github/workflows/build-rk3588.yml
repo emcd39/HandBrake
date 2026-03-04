@@ -4,12 +4,13 @@ on:
   push:
     branches: [master]
     paths:
-      - '.github/workflows/build-rk3588.yml'
-      - 'make/**'
-      - 'gtk/**'
-      - 'libhb/**'
-      - 'configure'
-      - 'GNUmakefile'
+    - '.github/workflows/build-rk3588.yml'
+    - 'make/**'
+    - 'gtk/**'
+    - 'libhb/**'
+    - 'contrib/**'
+    - 'configure'
+    - 'GNUmakefile'
   workflow_dispatch:
     inputs:
       gtk:

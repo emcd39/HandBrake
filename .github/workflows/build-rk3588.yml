@@ -164,7 +164,7 @@ jobs:
         with:
           name: handbrake-gtk-arm64
           path: |
-            build/gtk/ghb
+            build/gtk/src/ghb
             build/HandBrakeCLI
           retention-days: 7
           if-no-files-found: warn

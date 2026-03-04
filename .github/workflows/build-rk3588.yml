@@ -128,7 +128,13 @@ jobs:
             libx265-dev \
             bzip2 \
             zlib1g-dev \
-            libnuma-dev
+            libnuma-dev \
+            libturbojpeg-dev \
+            libogg-dev \
+            libvorbis-dev \
+            libtheora-dev \
+            libsvtav1-dev \
+            libxml2-dev
 
       - name: Configure HandBrake GTK
         run: |
@@ -138,7 +144,9 @@ jobs:
       - name: Build HandBrake GTK
         run: |
           cd build
-          make -j$(nproc)
+          make -j$(nproc) 2>&1 | tee build.log
+          echo "=== Build log tail ==="
+          tail -100 build.log
 
       - name: List build outputs
         run: |
@@ -148,6 +156,8 @@ jobs:
           ls -la build/gtk/ 2>/dev/null || echo "No gtk subdir"
           echo "=== Looking for ghb binary ==="
           find build -name "ghb" -type f 2>/dev/null
+          echo "=== Check if meson was invoked ==="
+          cat build/gtk/build.ninja 2>/dev/null | head -20 || echo "No build.ninja found"
 
       - name: Upload GTK artifact
         uses: actions/upload-artifact@v4

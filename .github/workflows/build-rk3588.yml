@@ -131,12 +131,21 @@ jobs:
           cd build
           make -j$(nproc)
 
-      - name: Upload GTK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: handbrake-gtk-arm64
-          path: |
-            build/HandBrake
-            build/HandBrakeCLI
-          retention-days: 7
-          if-no-files-found: warn
+    - name: List build outputs
+      run: |
+        echo "=== Build directory contents ==="
+        ls -la build/
+        echo "=== GTK build directory contents ==="
+        ls -la build/gtk/ 2>/dev/null || echo "No gtk subdir"
+        echo "=== Looking for ghb binary ==="
+        find build -name "ghb" -type f 2>/dev/null
+
+    - name: Upload GTK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: handbrake-gtk-arm64
+        path: |
+          build/gtk/ghb
+          build/HandBrakeCLI
+        retention-days: 7
+        if-no-files-found: warn

@@ -15,8 +15,7 @@ endif
 $(eval $(call import.MODULE.defs,FFMPEG,ffmpeg,$(__deps__)))
 $(eval $(call import.CONTRIB.defs,FFMPEG))
 
-FFMPEG.FETCH.url = https://github.com/nyanmisaka/ffmpeg-rockchip/archive/refs/heads/8.0.tar.gz
-FFMPEG.FETCH.sha256 = dummy
+FFMPEG.FETCH.url = https://github.com/nyanmisaka/ffmpeg-rockchip/archive/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz
 
 FFMPEG.GCC.args.c_std =
 

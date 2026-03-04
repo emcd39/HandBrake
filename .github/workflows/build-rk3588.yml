@@ -132,7 +132,7 @@ jobs:
 
       - name: Configure HandBrake GTK
         run: |
-          ./configure --gtk --force
+          ./configure --enable-gtk --force
           ls -la build/
 
       - name: Build HandBrake GTK

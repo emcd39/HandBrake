@@ -1452,17 +1452,17 @@ def createCLI( cross = None ):
     grp.add_argument( '--enable-vce', dest="enable_vce", default=IfHost(True, 'x86_64-w64-mingw32*', none=False).value, action='store_true', help=(( 'enable %s' %h ) if h != argparse.SUPPRESS else h) )
     grp.add_argument( '--disable-vce', dest="enable_vce", action='store_false', help=(( 'disable %s' %h ) if h != argparse.SUPPRESS else h) )
 
-h = IfHost( 'libdovi', '*-*-*', none=argparse.SUPPRESS ).value
-grp.add_argument( '--enable-libdovi', dest="enable_libdovi", default=not Tools.cargo.fail and not Tools.cargoc.fail, action='store_true', help=(( 'enable %s' %h ) if h != argparse.SUPPRESS else h) )
-grp.add_argument( '--disable-libdovi', dest="enable_libdovi", action='store_false', help=(( 'disable %s' %h ) if h != argparse.SUPPRESS else h) )
-
-rkmpp_supported = host_tuple.match( 'aarch64-*-linux*' )
-h = 'Rockchip MPP hardware encoder/decoder (RK3588)' if rkmpp_supported else argparse.SUPPRESS
-grp.add_argument( '--enable-rkmpp', dest="enable_rkmpp", default=rkmpp_supported, action='store_true', help=(( 'enable %s' %h ) if h != argparse.SUPPRESS else h) )
-grp.add_argument( '--disable-rkmpp', dest="enable_rkmpp", action='store_false', help=(( 'disable %s' %h ) if h != argparse.SUPPRESS else h) )
+    h = IfHost( 'libdovi', '*-*-*', none=argparse.SUPPRESS ).value
+    grp.add_argument( '--enable-libdovi', dest="enable_libdovi", default=not Tools.cargo.fail and not Tools.cargoc.fail, action='store_true', help=(( 'enable %s' %h ) if h != argparse.SUPPRESS else h) )
+    grp.add_argument( '--disable-libdovi', dest="enable_libdovi", action='store_false', help=(( 'disable %s' %h ) if h != argparse.SUPPRESS else h) )
 
 
-cli.add_argument_group( grp )
+
+    rkmpp_supported = host_tuple.match( 'aarch64-*-linux*' )
+    h = 'Rockchip MPP hardware encoder/decoder (RK3588)' if rkmpp_supported else argparse.SUPPRESS
+    grp.add_argument( '--enable-rkmpp', dest="enable_rkmpp", default=rkmpp_supported, action='store_true', help=(( 'enable %s' %h ) if h != argparse.SUPPRESS else h) )
+    grp.add_argument( '--disable-rkmpp', dest="enable_rkmpp", action='store_false', help=(( 'disable %s' %h ) if h != argparse.SUPPRESS else h) )
+    cli.add_argument_group( grp )
 
     ## add launch options
     grp = cli.add_argument_group( 'Launch Options' )
@@ -1792,8 +1792,7 @@ try:
     options.enable_nvdec      = options.enable_nvdec if nvenc_supported else False
     options.enable_qsv        = options.enable_qsv if qsv_supported else False
     options.enable_vce        = options.enable_vce if vce_supported else False
-options.enable_gtk = options.enable_gtk if gtk_supported else False
-options.enable_rkmpp = options.enable_rkmpp if rkmpp_supported else False
+    options.enable_gtk        = options.enable_gtk if gtk_supported else False
 
     #####################################
     ## Additional library and tool checks
@@ -2109,8 +2108,8 @@ int main()
     doc.add( 'FEATURE.vce',           int( options.enable_vce ))
     doc.add( 'FEATURE.x265',          int( options.enable_x265 ))
     doc.add( 'FEATURE.numa',          int( options.enable_numa ))
-doc.add( 'FEATURE.libdovi', int( options.enable_libdovi ))
-doc.add( 'FEATURE.rkmpp', int( options.enable_rkmpp ))
+    doc.add( 'FEATURE.libdovi',       int( options.enable_libdovi ))
+    doc.add( 'FEATURE.rkmpp', int( options.enable_rkmpp ))
 
     if build_tuple.match( '*-*-darwin*' ) and options.cross is None:
         doc.add( 'FEATURE.xcode',      int( not (Tools.xcodebuild.fail or options.disable_xcode) ))
@@ -2237,8 +2236,7 @@ doc.add( 'FEATURE.rkmpp', int( options.enable_rkmpp ))
     print(f'Enable QSV:            {options.enable_qsv}' + ('' if qsv_supported else note_unsupported))
     print(f'Enable VCE:            {options.enable_vce}' + ('' if vce_supported else note_unsupported))
     print(f'Enable libdovi:        {options.enable_libdovi}')
-print(f'Enable GTK GUI: {options.enable_gtk}' + ('' if gtk_supported else note_unsupported))
-print(f'Enable RKMPP: {options.enable_rkmpp}' + ('' if rkmpp_supported else note_unsupported))
+    print(f'Enable GTK GUI:        {options.enable_gtk}' + ('' if gtk_supported else note_unsupported))
 
     if len(targets) > 0:
         print( print_blue('Note:'), 'passthru arguments:', *targets)

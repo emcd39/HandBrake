@@ -97,14 +97,15 @@ jobs:
             python3-pip \
             wget \
             curl \
-            libgtk-3-dev \
-            libglib2.0-dev \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libwebkit2gtk-4.1-dev \
-            libnotify-dev \
-            intltool \
-            libgudev-1.0-dev \
+          libgtk-4-dev \
+          libglib2.0-dev \
+          libgstreamer1.0-dev \
+          libgstreamer-plugins-base1.0-dev \
+          libwebkit2gtk-4.1-dev \
+          libnotify-dev \
+          intltool \
+          libgudev-1.0-dev \
+          libadwaita-1-dev \
             libass-dev \
             libmp3lame-dev \
             libopus-dev \

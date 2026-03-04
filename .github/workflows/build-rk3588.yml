@@ -61,7 +61,7 @@ jobs:
 
       - name: Configure HandBrake CLI
         run: |
-          ./configure --disable-gtk --force
+          ./configure --disable-gtk --disable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake CLI
@@ -135,15 +135,11 @@ jobs:
             libtheora-dev \
             libsvtav1-dev \
             libxml2-dev \
-            libdrm-dev \
-            librga2 \
-            librga-dev \
-            librockchip-mpp1 \
-            librockchip-mpp-dev
+            libdrm-dev
 
-      - name: Configure HandBrake GTK with RKMPP
+      - name: Configure HandBrake GTK
         run: |
-          ./configure --enable-gtk --enable-rkmpp --force
+          ./configure --enable-gtk --disable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake GTK

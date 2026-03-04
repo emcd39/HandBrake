@@ -6,7 +6,7 @@ on:
       gtk:
         description: 'Build with GTK GUI (for novnc)'
         required: false
-        default: 'false'
+        default: 'true'
 
 jobs:
   build-cli:

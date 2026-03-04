@@ -56,6 +56,12 @@ MODULES += contrib/libdvdread
 MODULES += contrib/libdvdnav
 MODULES += contrib/libbluray
 MODULES += contrib/x264
+MODULES += contrib/libtheora
+MODULES += contrib/libvorbis
+MODULES += contrib/libogg
+MODULES += contrib/libvpx
+MODULES += contrib/lame
+MODULES += contrib/jansson
 
 ifeq (1,$(FEATURE.qsv))
 ifeq (,$(filter $(HOST.system),freebsd))

@@ -1,6 +1,15 @@
 name: Build HandBrake for RK3588 (ARM64)
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/build-rk3588.yml'
+      - 'make/**'
+      - 'gtk/**'
+      - 'libhb/**'
+      - 'configure'
+      - 'GNUmakefile'
   workflow_dispatch:
     inputs:
       gtk:

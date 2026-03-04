@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandBrake Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --hb-dark: #1a1a2e;
+            --hb-primary: #4361ee;
+            --hb-secondary: #3f37c9;
+            --hb-accent: #4895ef;
+            --hb-success: #06d6a0;
+            --hb-warning: #ffd166;
+            --hb-danger: #ef476f;
+            --hb-text: #e0e0e0;
+            --hb-bg: #16213e;
+            --hb-card: #1f3460;
+        }
+        
+        body {
+            background: var(--hb-bg);
+            color: var(--hb-text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: var(--hb-dark);
+            border-bottom: 2px solid var(--hb-primary);
+        }
+        
+        .sidebar {
+            background: var(--hb-card);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .main-content {
+            background: var(--hb-card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .btn-hb {
+            background: var(--hb-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-hb:hover {
+            background: var(--hb-secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-hb-success {
+            background: var(--hb-success);
+        }
+        
+        .btn-hb-danger {
+            background: var(--hb-danger);
+        }
+        
+        .form-control, .form-select {
+            background: var(--hb-dark);
+            border: 1px solid var(--hb-primary);
+            color: var(--hb-text);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: var(--hb-dark);
+            border-color: var(--hb-accent);
+            color: var(--hb-text);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .form-label {
+            color: var(--hb-accent);
+            font-weight: 500;
+        }
+        
+        .card {
+           hb-dark);
+            background: var(-- border: 1px solid var(--hb-primary);
+        }
+        
+        .card-header {
+            background: var(--hb-primary);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .progress {
+            background: var(--hb-dark);
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--hb-primary), var(--hb-accent));
+            font-weight: 600;
+            line-height: 25px;
+        }
+        
+        .queue-item {
+            background: var(--hb-dark);
+            border-left: 4px solid var(--hb-primary);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s;
+        }
+        
+        .queue-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .queue-item.completed {
+            border-left-color: var(--hb-success);
+        }
+        
+        .queue-item.failed {
+            border-left-color: var(--hb-danger);
+        }
+        
+        .queue-item.running {
+            border-left-color: var(--hb-warning);
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--hb-text);
+            border: none;
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--hb-accent);
+            border: none;
+            background: transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: var(--hb-card);
+            color: var(--hb-accent);
+            border: none;
+            border-bottom: 3px solid var(--hb-accent);
+        }
+        
+        .file-drop-zone {
+            border: 2px dashed var(--hb-primary);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-drop-zone:hover {
+            border-color: var(--hb-accent);
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .file-drop-zone.dragover {
+            border-color: var(--hb-success);
+            background: rgba(6, 214, 160, 0.1);
+        }
+        
+        .setting-group {
+            background: var(--hb-dark);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .setting-group-title {
+            color: var(--hb-accent);
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--hb-primary);
+        }
+        
+        .range-value {
+            color: var(--hb-accent);
+            font-weight: 600;
+        }
+        
+        .encoder-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--hb-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.idle { background: var(--hb-text); }
+        .status-indicator.running { background: var(--hb-warning); animation: pulse 1s infinite; }
+        .status-indicator.completed { background: var(--hb-success); }
+        .status-indicator.failed { background: var(--hb-danger); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast-hb {
+            background: var(--hb-card);
+            border-left: 4px solid var(--hb-primary);
+            color: var(--hb-text);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-film"></i> HandBrake Web
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="status-indicator idle" id="systemStatus"></span>
+                <span class="text-muted">Ready</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h5 class="mb-3"><i class="bi bi-collection"></i> Presets</h5>
+                    <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action active" data-preset="fast">
+                            <i class="bi bi-lightning"></i> Fast 1080p
+                        </button>
+                        <button class="list-group-item list-group-item-action" data-preset="slow">
+                            <i class="bi bi-turtle"></i> Slow 1080p
+                        </button>
+                        <button class="list-group-item list-group-item-action" data-preset="hq">
+                            <i class="bi bi-award"></i> High Quality
+                        </button>
+                        <button class="list-group-item list-group-item-action" data-preset="web">
+                            <i class="bi bi-globe"></i> Web Optimized
+                        </button>
+                        <button class="list-group-item list-group-item-action" data-preset="mobile">
+                            <i class="bi bi-phone"></i> Mobile
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <h5 class="mb-3"><i class="bi bi-journal-text"></i> Queue</h5>
+                    <div id="queueList">
+                        <p class="text-muted">No jobs in queue</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="source-tab" data-bs-toggle="tab" data-bs-target="#source" type="button">
+                            <i class="bi bi-disc"></i> Source
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button">
+                            <i class="bi bi-camera-video"></i> Video
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio" type="button">
+                            <i class="bi bi-volume-up"></i> Audio
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="subtitle-tab" data-bs-toggle="tab" data-bs-target="#subtitle" type="button">
+                            <i class="bi bi-closed-captioning"></i> Subtitles
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters" type="button">
+                            <i class="bi bi-stack"></i> Filters
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content main-content" id="mainTabsContent">
+                    <div class="tab-pane fade show active" id="source" role="tabpanel">
+                        <div class="file-drop-zone" id="fileDropZone">
+                            <i class="bi bi-cloud-upload" style="font-size: 48px;"></i>
+                            <h4 class="mt-3">Drop video file here</h4>
+                            <p class="text-muted">or click to browse</p>
+                            <input type="file" id="videoFile" accept="video/*" style="display: none;">
+                        </div>
+                        
+                        <div id="sourceInfo" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="bi bi-info-circle"></i> Source Information
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>File:</strong> <span id="sourceFile">-</span></p>
+                                            <p><strong>Duration:</strong> <span id="sourceDuration">-</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Resolution:</strong> <span id="sourceResolution">-</span></p>
+                                            <p><strong>Size:</strong> <span id="sourceSize">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> Destination
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Output File</label>
+                                            <input type="text" class="form-control" id="outputFile" value="output.mp4">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Format</label>
+                                            <select class="form-select" id="outputFormat">
+                                                <option value="mp4" selected>MP4</option>
+                                                <option value="mkv">MKV</option>
+                                                <option value="webm">WebM</option>
+                                                <option value="mov">MOV</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="video" role="tabpanel">
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-gear"></i> Video Encoder
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Encoder</label>
+                                    <select class="form-select" id="videoEncoder">
+                                        <option value="x264" selected>H.264 (x264)</option>
+                                        <option value="x265">H.265/HEVC (x265)</option>
+                                        <option value="vp9">VP9</option>
+                                        <option value="av1">AV1 (SVT)</option>
+                                        <option value="vpx">VP8</option>
+                                        <option value="theora">Theora</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Preset</label>
+                                    <select class="form-select" id="encoderPreset">
+                                        <option value="ultrafast">Ultrafast</option>
+                                        <option value="superfast">Superfast</option>
+                                        <option value="veryfast">Veryfast</option>
+                                        <option value="faster">Faster</option>
+                                        <option value="fast" selected>Fast</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="slow">Slow</option>
+                                        <option value="slower">Slower</option>
+                                        <option value="veryslow">Veryslow</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-sliders"></i> Quality
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Quality Control</label>
+                                    <select class="form-select" id="qualityControl">
+                                        <option value="crf" selected>Constant Quality (CRF)</option>
+                                        <option value="bitrate">Average Bitrate</option>
+                                        <option value="twoPass">Two-Pass Encoding</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">RF Value: <span class="range-value" id="rfValue">20</span></label>
+                                    <input type="range" class="form-range" id="rfSlider" min="0" max="51" value="20">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Higher quality</small>
+                                        <small class="text-muted">Smaller file</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-aspect-ratio"></i> Resolution
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label">Width</label>
+                                    <input type="number" class="form-control" id="outputWidth" placeholder="Auto">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Height</label>
+                                    <input type="number" class="form-control" id="outputHeight" placeholder="Auto">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Anamorphic</label>
+                                    <select class="form-select" id="anamorphic">
+                                        <option value="none" selected>None</option>
+                                        <option value="strict">Strict</option>
+                                        <option value="loose">Loose</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Modulus</label>
+                                    <select class="form-select" id="modulus">
+                                        <option value="2" selected>2</option>
+                                        <option value="4">4</option>
+                                        <option value="8">8</option>
+                                        <option value="16">16</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-speedometer2"></i> Framerate
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Framerate</label>
+                                    <select class="form-select" id="framerate">
+                                        <option value="same" selected>Same as source</option>
+                                        <option value="23.976">23.976</option>
+                                        <option value="24">24</option>
+                                        <option value="25">25</option>
+                                        <option value="29.97">29.97</option>
+                                        <option value="30">30</option>
+                                        <option value="50">50</option>
+                                        <option value="59.94">59.94</option>
+                                        <option value="60">60</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="constantFramerate">
+                                        <label class="form-check-label" for="constantFramerate">
+                                            Constant Framerate
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="audio" role="tabpanel">
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-soundwave"></i> Audio Track 1
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Encoder</label>
+                                    <select class="form-select" id="audioEncoder">
+                                        <option value="aac" selected>AAC (CoreAudio)</option>
+                                        <option value="ac3">AC3 (Dolby Digital)</option>
+                                        <option value="eac3">E-AC3 (Dolby Digital Plus)</option>
+                                        <option value="mp3">MP3 (LAME)</option>
+                                        <option value="opus">Opus</option>
+                                        <option value="vorbis">Vorbis</option>
+                                        <option value="flac">FLAC</option>
+                                        <option value="copy">Copy (Passthrough)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bitrate</label>
+                                    <select class="form-select" id="audioBitrate">
+                                        <option value="32">32 kbps</option>
+                                        <option value="64">64 kbps</option>
+                                        <option value="96">96 kbps</option>
+                                        <option value="128" selected>128 kbps</option>
+                                        <option value="160">160 kbps</option>
+                                        <option value="192">192 kbps</option>
+                                        <option value="256">256 kbps</option>
+                                        <option value="320">320 kbps</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Sample Rate</label>
+                                    <select class="form-select" id="audioSampleRate">
+                                        <option value="auto" selected>Auto</option>
+                                        <option value="22050">22.05 kHz</option>
+                                        <option value="44100">44.1 kHz</option>
+                                        <option value="48000">48 kHz</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="subtitle" role="tabpanel">
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-closed-captioning"></i> Subtitles
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="subtitlesBurned">
+                                <label class="form-check-label" for="subtitlesBurned">
+                                    Burn subtitles into video
+                                </label>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">Select Subtitles</label>
+                                <select class="form-select" id="subtitleTrack">
+                                    <option value="none" selected>None</option>
+                                    <option value="scan">Add automatically</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="filters" role="tabpanel">
+                        <div class="setting-group">
+                            <div class="setting-group-title">
+                                <i class="bi bi-magic"></i> Video Filters
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterDenoise">
+                                        <label class="form-check-label" for="filterDenoise">Denoise</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterSharpen">
+                                        <label class="form-check-label" for="filterSharpen">Sharpen</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterDeinterlace">
+                                        <label class="form-check-label" for="filterDeinterlace">Deinterlace</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterDetelecine">
+                                        <label class="form-check-label" for="filterDetelecine">Detelecine</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterDeblock">
+                                        <label class="form-check-label" for="filterDeblock">Deblock</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="filterGrayscale">
+                                        <label class="form-check-label" for="filterGrayscale">Grayscale</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-hb btn-hb-danger" id="cancelBtn" disabled>
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button class="btn btn-hb btn-hb-success" id="startBtn">
+                        <i class="bi bi-play-fill"></i> Start Encoding
+                    </button>
+                </div>
+                
+                <div class="mt-4" id="progressContainer" style="display: none;">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-activity"></i> Encoding Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                            <p class="mt-3 text-muted" id="progressStatus">Starting...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentJobId = null;
+        let sourcePath = null;
+        let progressInterval = null;
+        
+        const presets = {
+            fast: { encoder: 'x264', quality: 22, preset: 'fast' },
+            slow: { encoder: 'x264', quality: 18, preset: 'slow' },
+            hq: { encoder: 'x265', quality: 18, preset: 'slow' },
+            web: { encoder: 'x264', quality: 23, preset: 'medium' },
+            mobile: { encoder: 'x264', quality: 25, preset: 'fast', width: 1280, height: 720 }
+        };
+        
+        document.querySelectorAll('[data-preset]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const preset = presets[btn.dataset.preset];
+                document.getElementById('videoEncoder').value = preset.encoder;
+                document.getElementById('rfSlider').value = preset.quality;
+                document.getElementById('rfValue').textContent = preset.quality;
+                document.getElementById('encoderPreset').value = preset.preset || 'medium';
+                if (preset.width) document.getElementById('outputWidth').value = preset.width;
+                if (preset.height) document.getElementById('outputHeight').value = preset.height;
+            });
+        });
+        
+        document.getElementById('rfSlider').addEventListener('input', (e) => {
+            document.getElementById('rfValue').textContent = e.target.value;
+        });
+        
+        const fileDropZone = document.getElementById('fileDropZone');
+        const videoFile = document.getElementById('videoFile');
+        
+        fileDropZone.addEventListener('click', () => videoFile.click());
+        
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+        
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+        
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        videoFile.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        async function handleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.filepath) {
+                    sourcePath = data.filepath;
+                    document.getElementById('sourceFile').textContent = file.name;
+                    document.getElementById('sourceSize').textContent = formatFileSize(file.size);
+                    document.getElementById('sourceInfo').style.display = 'block';
+                    
+                    document.getElementById('systemStatus').className = 'status-indicator running';
+                    
+                    showToast('Source loaded: ' + file.name, 'success');
+                } else if (data.error) {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            } catch (error) {
+                showToast('Error loading file: ' + error.message, 'danger');
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            if (!sourcePath) {
+                showToast('Please select a source file first', 'warning');
+                return;
+            }
+            
+            const params = {
+                input: sourcePath,
+                output: document.getElementById('outputFile').value,
+                encoder: document.getElementById('videoEncoder').value,
+                quality: parseInt(document.getElementById('rfSlider').value),
+                format: document.getElementById('outputFormat').value,
+                audio_encoder: document.getElementById('audioEncoder').value,
+                audio_bitrate: parseInt(document.getElementById('audioBitrate').value)
+            };
+            
+            const width = document.getElementById('outputWidth').value;
+            const height = document.getElementById('outputHeight').value;
+            if (width) params.width = parseInt(width);
+            if (height) params.height = parseInt(height);
+            
+            try {
+                const response = await fetch('/api/encode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                const data = await response.json();
+                
+                if (data.job_id) {
+                    currentJobId = data.job_id;
+                    document.getElementById('progressContainer').style.display = 'block';
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('cancelBtn').disabled = false;
+                    
+                    document.getElementById('systemStatus').className = 'status-indicator running';
+                    
+                    progressInterval = setInterval(checkProgress, 1000);
+                    showToast('Encoding started', 'success');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'danger');
+            }
+        });
+        
+        async function checkProgress() {
+            if (!currentJobId) return;
+            
+            try {
+                const response = await fetch('/api/status/' + currentJobId);
+                const data = await response.json();
+                
+                const progress = data.progress || 0;
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+                document.getElementById('progressStatus').textContent = data.status + (data.last_line ? ' - ' + data.last_line : '');
+                
+                if (data.status === 'completed') {
+                    clearInterval(progressInterval);
+                    document.getElementById('systemStatus').className = 'status-indicator completed';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('cancelBtn').disabled = true;
+                    showToast('Encoding completed!', 'success');
+                } else if (data.status === 'failed') {
+                    clearInterval(progressInterval);
+                    document.getElementById('systemStatus').className = 'status-indicator failed';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('cancelBtn').disabled = true;
+                    showToast('Encoding failed: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            } catch (error) {
+                console.error('Progress check error:', error);
+            }
+        }
+        
+        document.getElementById('cancelBtn').addEventListener('click', async () => {
+            if (!currentJobId) return;
+            
+            try {
+                await fetch('/api/cancel/' + currentJobId, { method: 'POST' });
+                clearInterval(progressInterval);
+                document.getElementById('systemStatus').className = 'status-indicator idle';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('cancelBtn').disabled = true;
+                showToast('Encoding cancelled', 'warning');
+            } catch (error) {
+                showToast('Error cancelling: ' + error.message, 'danger');
+            }
+        });
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-hb show mb-2`;
+            toast.innerHTML = `
+                <div class="toast-body d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -52,7 +52,7 @@ jobs:
 
       - name: Configure HandBrake CLI
         run: |
-          ./configure --force
+          ./configure --disable-gtk --force
           ls -la build/
 
       - name: Build HandBrake CLI

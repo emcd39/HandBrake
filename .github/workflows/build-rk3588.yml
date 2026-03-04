@@ -47,23 +47,13 @@ jobs:
             libdvdread-dev \
             libjansson-dev \
             bzip2 \
-            zlib1g-dev
-
-      - name: Debug - Check tools
-        run: |
-          which python3
-          python3 --version
-          which autoconf
-          which automake
-          which libtool
-          which pkg-config
-          ls -la configure
-          head -30 configure
+            zlib1g-dev \
+            libnuma-dev
 
       - name: Configure HandBrake CLI
         run: |
-          ./configure --force 2>&1 | tee configure.log
-          echo "Configure exit code: $?"
+          ./configure --force
+          ls -la build/
 
       - name: Build HandBrake CLI
         run: |
@@ -127,23 +117,13 @@ jobs:
             libx264-dev \
             libx265-dev \
             bzip2 \
-            zlib1g-dev
-
-      - name: Debug - Check tools
-        run: |
-          which python3
-          python3 --version
-          which autoconf
-          which automake
-          which libtool
-          which pkg-config
-          ls -la configure
-          head -30 configure
+            zlib1g-dev \
+            libnuma-dev
 
       - name: Configure HandBrake GTK
         run: |
-          ./configure --gtk --force 2>&1 | tee configure.log
-          echo "Configure exit code: $?"
+          ./configure --gtk --force
+          ls -la build/
 
       - name: Build HandBrake GTK
         run: |

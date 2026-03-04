@@ -1,0 +1,19 @@
+Package: handbrake-rk3588
+Version: 1.0.0
+Section: video
+Priority: optional
+Architecture: arm64
+Maintainer: HandBrake RK3588 Team <rk3588@example.com>
+Description: HandBrake GTK with RK3588 hardware acceleration
+ HandBrake is a tool for converting video from nearly any format
+ to a selection of modern, widely supported codecs.
+ .
+ This package includes GTK GUI (ghb) optimized for RK3588 platforms,
+ with support for hardware encoding/decoding via Rockchip MPP and RGA.
+Depends: libgtk-4-1, libglib2.0-0, libadwaita-1-0, libwebkit2gtk-4.1-0,
+ libass9, libmp3lame0, libopus0, libspeex1, libvpx9,
+ libbluray2, libdvdnav4, libdvdread8, libjansson4,
+ libx264-164, libx265-199, libtheora0, libvorbis0a, libogg0,
+ libturbojpeg0, libnuma1, libsvtav1enc0, libxml2,
+ librga2, librockchip-mpp1, jellyfin-ffmpeg7
+Homepage: https://handbrake.fr

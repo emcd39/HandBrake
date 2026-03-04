@@ -65,10 +65,6 @@ MODULES += contrib/jansson
 MODULES += contrib/libjpeg-turbo
 MODULES += contrib/libopus
 MODULES += contrib/libspeex
-MODULES += contrib/freetype
-MODULES += contrib/fribidi
-MODULES += contrib/harfbuzz
-MODULES += contrib/libass
 
 ifeq (1,$(FEATURE.qsv))
 ifeq (,$(filter $(HOST.system),freebsd))

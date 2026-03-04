@@ -55,6 +55,12 @@ ifeq (1,$(HOST.cross))
         X265_8.CONFIGURE.extra += -DCMAKE_RC_COMPILER=$(HOST.cross.prefix)windres
         X265_8.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_8.CONFIGURE.host)"
     endif
+    ## Linux cross-compile to ARM - disable x86 optimizations
+    ifeq (gnu,$(HOST.system))
+        X265_8.CONFIGURE.extra += -DCMAKE_SYSTEM_NAME=Linux
+        X265_8.CONFIGURE.extra += -DCMAKE_SYSTEM_PROCESSOR=aarch64
+        X265_8.CONFIGURE.extra += -DENABLE_ASSEMBLY=OFF
+    endif
     X265_8.CONFIGURE.args.build = -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
 endif
 

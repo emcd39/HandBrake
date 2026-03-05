@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libmp3lame0 \
     libopus0 \
     libspeex1 \
-    libvpx9 \
+    libvpx7 \
     libbluray2 \
     libdvdnav4 \
     libdvdread8 \
@@ -44,7 +44,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libogg0 \
     libturbojpeg0 \
     libnuma1 \
-    libsvtav1enc0 \
     libxml2 \
     libdrm2 \
     # Process management

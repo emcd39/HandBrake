@@ -46,10 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libnuma1 \
     libsvtav1enc0 \
     libxml2 \
-    # Rockchip hardware acceleration
-    librga2 \
-    librockchip-mpp1 \
-    librockchip-mpp-dev \
+    libdrm2 \
     # Process management
     supervisor \
     procps \
@@ -87,8 +84,8 @@ RUN groupadd -f video && groupadd -f render && groupadd -f mpp && \
 
 # Supervisor configuration
 RUN mkdir -p /etc/supervisor/conf.d
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY start.sh /opt/start.sh
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/start.sh /opt/start.sh
 RUN chmod +x /opt/start.sh
 
 # novnc configuration

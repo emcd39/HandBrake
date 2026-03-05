@@ -60,6 +60,13 @@ jobs:
             zlib1g-dev \
             libnuma-dev
 
+      - name: Pre-download ffmpeg-rockchip
+        run: |
+          mkdir -p download
+          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+
       - name: Configure HandBrake CLI
         run: |
           ./configure --disable-gtk --disable-rkmpp --force
@@ -137,6 +144,13 @@ jobs:
             libsvtav1-dev \
             libxml2-dev \
             libdrm-dev
+
+      - name: Pre-download ffmpeg-rockchip
+        run: |
+          mkdir -p download
+          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
 
       - name: Configure HandBrake GTK
         run: |

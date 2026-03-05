@@ -64,13 +64,9 @@ RUN if [ -n "$GHB_ARTIFACT_URL" ]; then \
         chmod +x /opt/handbrake/gtk/src/ghb /opt/handbrake/HandBrakeCLI; \
     fi
 
-# Set up device permissions for RK3588 hardware
-RUN groupadd -f video && groupadd -f render && groupadd -f mpp && \
-    useradd -m -G video,render,mpp handbrake && \
-    echo 'KERNEL=="mpp_service", MODE="0660", GROUP="mpp"' > /etc/udev/rules.d/99-mpp.rules && \
-    echo 'KERNEL=="rga", MODE="0660", GROUP="mpp"' >> /etc/udev/rules.d/99-mpp.rules && \
-    echo 'KERNEL=="dma_heap", MODE="0660", GROUP="render"' > /etc/udev/rules.d/99-dma-heap.rules && \
-    echo 'KERNEL=="dri/card*", MODE="0660", GROUP="video"' >> /etc/udev/rules.d/99-dri.rules
+# Create handbrake user with video and render groups
+RUN groupadd -f video && groupadd -f render && \
+    useradd -m -G video,render handbrake || true
 
 # Supervisor configuration
 RUN mkdir -p /etc/supervisor/conf.d

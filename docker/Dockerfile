@@ -53,15 +53,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install jellyfin-ffmpeg (contains ffmpeg-rockchip patches)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg2 && \
-    echo "deb [arch=arm64] https://repo.jellyfin.com/debian bookworm main" > /etc/apt/sources.list.d/jellyfin.list && \
-    wget -O - https://repo.jellyfin.com/jellyfin_team.gpg.key | apt-key add - && \
-    apt-get update && \
-    apt-get install -y jellyfin-ffmpeg7 && \
-    rm -rf /var/lib/apt/lists/*
-
 # Create directories
 RUN mkdir -p /opt/handbrake /var/log/supervisor /data /config
 
@@ -89,10 +80,6 @@ RUN chmod +x /opt/start.sh
 
 # novnc configuration
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
-
-# Set library path for jellyfin-ffmpeg
-ENV LD_LIBRARY_PATH=/usr/lib/jellyfin/lib:$LD_LIBRARY_PATH
-ENV PATH=/usr/lib/jellyfin/bin:$PATH
 
 # Expose novnc port
 EXPOSE 6080

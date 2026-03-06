@@ -84,11 +84,6 @@ ifeq (1,$(FEATURE.libdovi))
 MODULES += contrib/libdovi
 endif
 
-ifeq (1,$(FEATURE.rkmpp))
-MODULES += contrib/rkmpp
-MODULES += contrib/rkrga
-endif
-
 ifneq (,$(filter $(HOST.system),darwin))
     MODULES += contrib/xz
     MODULES += contrib/bin2c

@@ -72,29 +72,27 @@ jobs:
           echo "max_size = 2G" > ~/.ccache/ccache.conf
           echo "/usr/lib/ccache" >> $GITHUB_PATH
 
-      - name: Cache contrib downloads
-        uses: actions/cache@v4
-        with:
-          path: contrib/download
-          key: contrib-${{ runner.os }}-${{ hashFiles('contrib/**') }}
-
-      - name: Pre-download ffmpeg-rockchip
+      - name: Pre-download RK3588 contribs
         run: |
           mkdir -p contrib/download
-          if [ ! -f contrib/download/ffmpeg-rockchip.tar.gz ]; then
-            git clone --depth 1 https://github.com/nyanmisaka/ffmpeg-rockchip.git ffmpeg-rockchip
-            tar -czf contrib/download/ffmpeg-rockchip.tar.gz ffmpeg-rockchip
-            rm -rf ffmpeg-rockchip
-          fi
 
-      - name: Configure
+          # mpp
+          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git -b v1.5.0 contrib/download/mpp
+
+          # rga
+          git clone --depth 1 https://gitee.com/nyanmisaka/rga.git -b v2.2.0 contrib/download/rga
+
+          # ffmpeg-rockchip 8.0 分支
+          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git contrib/download/ffmpeg-rockchip
+
+      - name: Configure HandBrake
         run: |
           ./configure \
             --enable-gtk \
             --enable-rkmpp \
             --force
 
-      - name: Build
+      - name: Build HandBrake
         run: |
           cd build
           make -j$(nproc)
@@ -113,9 +111,7 @@ jobs:
       - name: Build DEB package
         run: |
           mkdir -p pkg/DEBIAN
-
           VERSION=$(git describe --tags --always || echo "0.0.0")
-
           cat <<EOF > pkg/DEBIAN/control
           Package: handbrake-rk3588
           Version: ${VERSION}
@@ -125,7 +121,6 @@ jobs:
           Maintainer: rk3588 build
           Description: HandBrake with RK3588 rkmpp hardware acceleration
           EOF
-
           dpkg-deb --build pkg handbrake-rk3588_${VERSION}_arm64.deb
 
       - name: Package tar.gz
@@ -143,7 +138,7 @@ jobs:
             handbrake-rk3588-arm64.tar.gz
             handbrake-rk3588_*_arm64.deb
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:

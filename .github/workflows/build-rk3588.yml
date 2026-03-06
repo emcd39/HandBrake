@@ -1,34 +1,23 @@
-name: Build HandBrake for RK3588 (ARM64)
+name: Build HandBrake RK3588
 
 on:
   push:
-    branches: [master]
-    paths:
-    - '.github/workflows/build-rk3588.yml'
-    - 'make/**'
-    - 'gtk/**'
-    - 'libhb/**'
-    - 'contrib/**'
-    - 'configure'
-    - 'GNUmakefile'
+    tags:
+      - "v*"
   workflow_dispatch:
-    inputs:
-      gtk:
-        description: 'Build with GTK GUI (for novnc)'
-        required: false
-        default: 'true'
 
 jobs:
-  build-cli:
-    runs-on: ubuntu-24.04-arm
+  build:
+    runs-on: ubuntu-22.04-arm
+
     steps:
-      - name: Checkout HandBrake
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -43,85 +32,16 @@ jobs:
             libtool \
             libtool-bin \
             m4 \
+            git \
             python3 \
             python3-pip \
-            wget \
             curl \
-            libass-dev \
-            libmp3lame-dev \
-            libopus-dev \
-            libspeex-dev \
-            libvpx-dev \
-            libbluray-dev \
-            libdvdnav-dev \
-            libdvdread-dev \
-            libjansson-dev \
-            bzip2 \
-            zlib1g-dev \
-            libnuma-dev
-
-      - name: Pre-download ffmpeg-rockchip
-        run: |
-          mkdir -p download
-          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-
-      - name: Configure HandBrake CLI
-        run: |
-          ./configure --disable-gtk --disable-rkmpp --force
-          ls -la build/
-
-      - name: Build HandBrake CLI
-        run: |
-          cd build
-          make -j$(nproc)
-
-      - name: Upload CLI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: handbrake-cli-arm64
-          path: build/HandBrakeCLI
-          retention-days: 7
-          if-no-files-found: warn
-
-  build-gtk:
-    runs-on: ubuntu-24.04-arm
-    if: ${{ github.event_name == 'push' || inputs.gtk == 'true' }}
-    steps:
-      - name: Checkout HandBrake
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            pkg-config \
-            nasm \
-            cmake \
-            meson \
-            ninja-build \
-            autoconf \
-            automake \
-            libtool \
-            libtool-bin \
-            m4 \
-            python3 \
-            python3-pip \
             wget \
-            curl \
+            ccache \
             libgtk-4-dev \
             libglib2.0-dev \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libwebkit2gtk-4.1-dev \
-            libnotify-dev \
-            intltool \
             libgudev-1.0-dev \
+            libnotify-dev \
             libadwaita-1-dev \
             libass-dev \
             libmp3lame-dev \
@@ -134,53 +54,101 @@ jobs:
             libjansson-dev \
             libx264-dev \
             libx265-dev \
-            bzip2 \
-            zlib1g-dev \
-            libnuma-dev \
             libturbojpeg-dev \
             libogg-dev \
             libvorbis-dev \
             libtheora-dev \
             libsvtav1-dev \
             libxml2-dev \
-            libdrm-dev
+            libdrm-dev \
+            libnuma-dev \
+            zlib1g-dev \
+            bzip2 \
+            dpkg-dev
+
+      - name: Enable ccache
+        run: |
+          mkdir -p ~/.ccache
+          echo "max_size = 2G" > ~/.ccache/ccache.conf
+          echo "/usr/lib/ccache" >> $GITHUB_PATH
+
+      - name: Cache contrib downloads
+        uses: actions/cache@v4
+        with:
+          path: contrib/download
+          key: contrib-${{ runner.os }}-${{ hashFiles('contrib/**') }}
 
       - name: Pre-download ffmpeg-rockchip
         run: |
-          mkdir -p download
-          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          mkdir -p contrib/download
+          if [ ! -f contrib/download/ffmpeg-rockchip.tar.gz ]; then
+            git clone --depth 1 https://github.com/nyanmisaka/ffmpeg-rockchip.git ffmpeg-rockchip
+            tar -czf contrib/download/ffmpeg-rockchip.tar.gz ffmpeg-rockchip
+            rm -rf ffmpeg-rockchip
+          fi
 
-      - name: Configure HandBrake GTK
+      - name: Configure
         run: |
-          ./configure --enable-gtk --disable-rkmpp --force
-          ls -la build/
+          ./configure \
+            --enable-gtk \
+            --enable-rkmpp \
+            --force
 
-      - name: Build HandBrake GTK
+      - name: Build
         run: |
           cd build
-          make -j$(nproc) 2>&1 | tee build.log
-          echo "=== Build log tail ==="
-          tail -100 build.log
+          make -j$(nproc)
 
-      - name: List build outputs
+      - name: Strip binaries
         run: |
-          echo "=== Build directory contents ==="
-          ls -la build/
-          echo "=== GTK build directory contents ==="
-          ls -la build/gtk/ 2>/dev/null || echo "No gtk subdir"
-          echo "=== Looking for ghb binary ==="
-          find build -name "ghb" -type f 2>/dev/null
-          echo "=== Check if meson was invoked ==="
-          cat build/gtk/build.ninja 2>/dev/null | head -20 || echo "No build.ninja found"
+          strip build/HandBrakeCLI || true
+          strip build/gtk/src/ghb || true
 
-      - name: Upload GTK artifact
+      - name: Prepare package structure
+        run: |
+          mkdir -p pkg/usr/bin
+          cp build/HandBrakeCLI pkg/usr/bin/
+          cp build/gtk/src/ghb pkg/usr/bin/ || true
+
+      - name: Build DEB package
+        run: |
+          mkdir -p pkg/DEBIAN
+
+          VERSION=$(git describe --tags --always || echo "0.0.0")
+
+          cat <<EOF > pkg/DEBIAN/control
+          Package: handbrake-rk3588
+          Version: ${VERSION}
+          Section: video
+          Priority: optional
+          Architecture: arm64
+          Maintainer: rk3588 build
+          Description: HandBrake with RK3588 rkmpp hardware acceleration
+          EOF
+
+          dpkg-deb --build pkg handbrake-rk3588_${VERSION}_arm64.deb
+
+      - name: Package tar.gz
+        run: |
+          mkdir dist
+          cp build/HandBrakeCLI dist/
+          cp build/gtk/src/ghb dist/ || true
+          tar -czf handbrake-rk3588-arm64.tar.gz -C dist .
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: handbrake-gtk-arm64
+          name: handbrake-rk3588
           path: |
-            build/gtk/src/ghb
-            build/HandBrakeCLI
-          retention-days: 7
-          if-no-files-found: warn
+            handbrake-rk3588-arm64.tar.gz
+            handbrake-rk3588_*_arm64.deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            handbrake-rk3588-arm64.tar.gz
+            handbrake-rk3588_*_arm64.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

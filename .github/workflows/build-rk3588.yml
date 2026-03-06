@@ -77,11 +77,14 @@ jobs:
           git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git
           cd mpp
 
-          mkdir build
-          cd build
-          cmake .. \
-           -DCMAKE_BUILD_TYPE=Release \
-           -DCMAKE_INSTALL_PREFIX=/usr
+          mkdir rkmpp_build
+          cd rkmpp_build
+          cmake \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_TEST=OFF \
+            ..
 
           make -j$(nproc)
           sudo make install

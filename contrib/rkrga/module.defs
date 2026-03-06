@@ -1,17 +1,9 @@
-$(eval $(call import.MODULE.defs,RGA,rga))
-$(eval $(call import.CONTRIB.defs,RGA))
+$(eval $(call import.MODULE.defs,RKRGA,rkrga))
+$(eval $(call import.CONTRIB.defs,RKRGA))
 
-RGA.GIT.url = https://gitee.com/nyanmisaka/rga.git
-RGA.GIT.branch = master
+RKRGA.GIT.url = https://gitee.com/nyanmisaka/rga.git
+RKRGA.GIT.branch = jellyfin-rga
 
-RGA.CONFIGURE = \
-    cd $(@D) && \
-    cmake -B build \
-    -DCMAKE_INSTALL_PREFIX=$(RGA.CONFIGURE.prefix) \
-    -DCMAKE_BUILD_TYPE=Release
-
-RGA.BUILD = \
-    $(MAKE) -C $(@D)/build -j$(JOBS)
-
-RGA.INSTALL = \
-    $(MAKE) -C $(@D)/build install
+RKRGA.CONFIGURE = $(TOUCH.exe) $@
+RKRGA.BUILD = $(TOUCH.exe) $@
+RKRGA.INSTALL = $(TOUCH.exe) $@

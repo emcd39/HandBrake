@@ -1,2 +1,0 @@
-$(eval $(call import.MODULE.rules,RKRGA))
-$(eval $(call import.CONTRIB.rules,RKRGA))

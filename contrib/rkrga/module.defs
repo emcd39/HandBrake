@@ -1,9 +1,0 @@
-$(eval $(call import.MODULE.defs,RKRGA,rkrga))
-$(eval $(call import.CONTRIB.defs,RKRGA))
-
-RKRGA.GIT.url = https://gitee.com/nyanmisaka/rga.git
-RKRGA.GIT.branch = jellyfin-rga
-
-RKRGA.CONFIGURE = $(TOUCH.exe) $@
-RKRGA.BUILD = $(TOUCH.exe) $@
-RKRGA.INSTALL = $(TOUCH.exe) $@

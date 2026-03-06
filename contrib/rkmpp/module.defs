@@ -2,16 +2,8 @@ $(eval $(call import.MODULE.defs,RKMPP,rkmpp))
 $(eval $(call import.CONTRIB.defs,RKMPP))
 
 RKMPP.GIT.url = https://gitee.com/nyanmisaka/mpp.git
-RKMPP.GIT.branch = master
+RKMPP.GIT.branch = develop
 
-RKMPP.CONFIGURE = \
-    cd $(@D) && \
-    cmake -B build \
-    -DCMAKE_INSTALL_PREFIX=$(RKMPP.CONFIGURE.prefix) \
-    -DCMAKE_BUILD_TYPE=Release
-
-RKMPP.BUILD = \
-    $(MAKE) -C $(@D)/build -j$(JOBS)
-
-RKMPP.INSTALL = \
-    $(MAKE) -C $(@D)/build install
+RKMPP.CONFIGURE = $(TOUCH.exe) $@
+RKMPP.BUILD = $(TOUCH.exe) $@
+RKMPP.INSTALL = $(TOUCH.exe) $@

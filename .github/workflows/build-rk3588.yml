@@ -71,6 +71,38 @@ jobs:
           mkdir -p ~/.ccache
           echo "max_size = 2G" > ~/.ccache/ccache.conf
           echo "/usr/lib/ccache" >> $GITHUB_PATH
+          
+      - name: Build rkmpp
+        run: |
+          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git
+          cd mpp
+
+          mkdir build
+          cd build
+          cmake .. \
+           -DCMAKE_BUILD_TYPE=Release \
+           -DCMAKE_INSTALL_PREFIX=/usr
+
+          make -j$(nproc)
+          sudo make install
+
+      - name: Build rkrga
+        run: |
+          mkdir -p ~/dev
+          cd ~/dev
+          git clone -b jellyfin-rga --depth=1 https://gitee.com/nyanmisaka/rga.git rkrga
+
+          meson setup rkrga rkrga_build \
+              --prefix=/usr \
+              --libdir=lib \
+              --buildtype=release \
+              --default-library=shared \
+              -Dcpp_args=-fpermissive \
+              -Dlibdrm=false \
+              -Dlibrga_demo=false
+
+          ninja -C rkrga_build
+          sudo ninja -C rkrga_build install
       
       - name: Configure HandBrake
         run: |

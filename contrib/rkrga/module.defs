@@ -1,9 +1,17 @@
-$(eval $(call import.MODULE.defs,RKRGA,rkrga))
-$(eval $(call import.CONTRIB.defs,RKRGA))
+$(eval $(call import.MODULE.defs,RGA,rga))
+$(eval $(call import.CONTRIB.defs,RGA))
 
-RKRGA.FETCH.url = https://github.com/airockchip/librga/archive/refs/tags/v2.2.0.tar.gz
-RKRGA.FETCH.sha256 = dummy
+RGA.GIT.url = https://gitee.com/nyanmisaka/rga.git
+RGA.GIT.branch = master
 
-RKRGA.CONFIGURE = $(TOUCH.exe) $@
-RKRGA.BUILD.extra = PREFIX="$(RKRGA.CONFIGURE.prefix)"
-RKRGA.INSTALL.extra = PREFIX="$(RKRGA.CONFIGURE.prefix)"
+RGA.CONFIGURE = \
+    cd $(@D) && \
+    cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=$(RGA.CONFIGURE.prefix) \
+    -DCMAKE_BUILD_TYPE=Release
+
+RGA.BUILD = \
+    $(MAKE) -C $(@D)/build -j$(JOBS)
+
+RGA.INSTALL = \
+    $(MAKE) -C $(@D)/build install

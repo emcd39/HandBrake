@@ -1,9 +1,17 @@
 $(eval $(call import.MODULE.defs,RKMPP,rkmpp))
 $(eval $(call import.CONTRIB.defs,RKMPP))
 
-RKMPP.FETCH.url = https://github.com/rockchip-linux/mpp/archive/refs/tags/v1.5.0.tar.gz
-RKMPP.FETCH.sha256 = dummy
+RKMPP.GIT.url = https://gitee.com/nyanmisaka/mpp.git
+RKMPP.GIT.branch = master
 
-RKMPP.CONFIGURE = $(TOUCH.exe) $@
-RKMPP.BUILD.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"
-RKMPP.INSTALL.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"
+RKMPP.CONFIGURE = \
+    cd $(@D) && \
+    cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=$(RKMPP.CONFIGURE.prefix) \
+    -DCMAKE_BUILD_TYPE=Release
+
+RKMPP.BUILD = \
+    $(MAKE) -C $(@D)/build -j$(JOBS)
+
+RKMPP.INSTALL = \
+    $(MAKE) -C $(@D)/build install

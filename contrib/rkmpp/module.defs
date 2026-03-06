@@ -1,9 +1,0 @@
-$(eval $(call import.MODULE.defs,RKMPP,rkmpp))
-$(eval $(call import.CONTRIB.defs,RKMPP))
-
-RKMPP.GIT.url = https://gitee.com/nyanmisaka/mpp.git
-RKMPP.GIT.branch = develop
-
-RKMPP.CONFIGURE = $(TOUCH.exe) $@
-RKMPP.BUILD = $(TOUCH.exe) $@
-RKMPP.INSTALL = $(TOUCH.exe) $@

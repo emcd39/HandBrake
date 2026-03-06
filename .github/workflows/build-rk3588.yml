@@ -71,20 +71,7 @@ jobs:
           mkdir -p ~/.ccache
           echo "max_size = 2G" > ~/.ccache/ccache.conf
           echo "/usr/lib/ccache" >> $GITHUB_PATH
-
-      - name: Pre-download RK3588 contribs
-        run: |
-          mkdir -p contrib/download
-
-          # mpp
-          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git contrib/download/mpp
-
-          # rga
-          git clone --depth 1 https://gitee.com/nyanmisaka/rga.git contrib/download/rga
-
-          # ffmpeg-rockchip 8.0 分支
-          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git contrib/download/ffmpeg-rockchip
-
+      
       - name: Configure HandBrake
         run: |
           ./configure \

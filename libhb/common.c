@@ -85,6 +85,7 @@ enum
     HB_GID_VCODEC_AV1_MF,
     HB_GID_VCODEC_FFV1,
     HB_GID_VCODEC_PRORES,
+    HB_GID_VCODEC_DNXHR,
     HB_GID_ACODEC_ALAC,
     HB_GID_ACODEC_ALAC_PASS,
     HB_GID_ACODEC_AAC,
@@ -324,6 +325,8 @@ hb_encoder_internal_t hb_video_encoders[]  =
     { { "VP8",                         "VP8",              "VP8 (libvpx)",                   HB_VCODEC_FFMPEG_VP8,                        HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP8,        },
     { { "VP9",                         "VP9",              "VP9 (libvpx)",                   HB_VCODEC_FFMPEG_VP9,        HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP9,        },
     { { "VP9 10-bit",                  "VP9_10bit",        "VP9 10-bit (libvpx)",            HB_VCODEC_FFMPEG_VP9_10BIT,  HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP9,        },
+    { { "DNxHR",                       "dnxhr",            "DNxHR (libavcodec)",             HB_VCODEC_FFMPEG_DNXHR,                       HB_MUX_MASK_MOV|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_DNXHR,      },
+    { { "DNxHR 10-bit",                "dnxhr_10bit",      "DNxHR 10-bit (libavcodec)",      HB_VCODEC_FFMPEG_DNXHR_10BIT,                 HB_MUX_MASK_MOV|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_DNXHR,      },
     { { "ProRes",                      "ff_prores",        "ProRes (libavcodec)",            HB_VCODEC_FFMPEG_PRORES,                      HB_MUX_MASK_MOV|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_PRORES,     },
     { { "ProRes (VideoToolbox)",       "vt_prores",        "ProRes (VideoToolbox)",          HB_VCODEC_VT_PRORES,                          HB_MUX_MASK_MOV|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_PRORES,     },
     { { "Theora",                      "theora",           "Theora (libtheora)",             HB_VCODEC_THEORA,                                             HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_THEORA,     },
@@ -399,6 +402,8 @@ static int hb_video_encoder_is_enabled(int encoder, int disable_hardware)
         case HB_VCODEC_SVT_AV1:
         case HB_VCODEC_SVT_AV1_10BIT:
         case HB_VCODEC_FFMPEG_FFV1:
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
 #if HB_PROJECT_FEATURE_FFMPEG_PRORES
         case HB_VCODEC_FFMPEG_PRORES:
 #endif
@@ -548,10 +553,11 @@ hb_container_t *hb_containers_first_item = NULL;
 hb_container_t *hb_containers_last_item  = NULL;
 hb_container_internal_t hb_containers[]  =
 {
-    // legacy muxers, back to HB 0.9.4 whenever possible (disabled)
+    // generic muxers for convenience and compatibility
     { { "M4V file",            "m4v",     NULL,                     "m4v",  0,              }, NULL, 0, HB_GID_MUX_MP4,  },
     { { "MP4 file",            "mp4",     NULL,                     "mp4",  0,              }, NULL, 0, HB_GID_MUX_MP4,  },
     { { "MKV file",            "mkv",     NULL,                     "mkv",  0,              }, NULL, 0, HB_GID_MUX_MKV,  },
+    { { "MOV file",            "mov",     NULL,                     "mov",  0,              }, NULL, 0, HB_GID_MUX_MOV,  },
     // actual muxers
     { { "MPEG-4 (avformat)",   "av_mp4",  "MPEG-4 (libavformat)",   "mp4",  HB_MUX_AV_MP4,  }, NULL, 1, HB_GID_MUX_MP4,  },
     { { "MPEG-4 (mp4v2)",      "mp4v2",   "MPEG-4 (libmp4v2)",      "mp4",  HB_MUX_MP4V2,   }, NULL, 1, HB_GID_MUX_MP4,  },
@@ -1731,6 +1737,8 @@ void hb_video_quality_get_limits(uint32_t codec, float *low, float *high,
             *high        = 100;
             break;
 
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_FFV1:
         case HB_VCODEC_FFMPEG_PRORES:
         case HB_VCODEC_VT_PRORES:
@@ -1790,6 +1798,8 @@ const char* hb_video_quality_get_name(uint32_t codec)
         case HB_VCODEC_VT_H265_10BIT:
             return "CQ";
 
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_MF_H264:
         case HB_VCODEC_FFMPEG_MF_H265:
         case HB_VCODEC_FFMPEG_MF_AV1:
@@ -1820,6 +1830,8 @@ int hb_video_bitrate_is_supported(uint32_t codec)
 {
     switch (codec)
     {
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_FFV1:
         case HB_VCODEC_FFMPEG_PRORES:
         case HB_VCODEC_VT_PRORES:
@@ -1841,6 +1853,8 @@ int hb_video_multipass_is_supported(uint32_t codec, int constant_quality)
             return !constant_quality && hb_vt_is_multipass_available(codec);
 #endif
 
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_MF_H264:
         case HB_VCODEC_FFMPEG_MF_H265:
         case HB_VCODEC_FFMPEG_MF_AV1:
@@ -1957,6 +1971,7 @@ int hb_video_encoder_get_depth(int encoder)
         case HB_VCODEC_X265_10BIT:
         case HB_VCODEC_SVT_AV1_10BIT:
         case HB_VCODEC_FFMPEG_VP9_10BIT:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_NVENC_H265_10BIT:
         case HB_VCODEC_FFMPEG_NVENC_AV1_10BIT:
         case HB_VCODEC_FFMPEG_VCE_H265_10BIT:
@@ -2098,6 +2113,8 @@ const char* const* hb_video_encoder_get_profiles(int encoder)
         case HB_VCODEC_FFMPEG_MF_H265:
         case HB_VCODEC_FFMPEG_MF_AV1:
         case HB_VCODEC_FFMPEG_MPEG2:
+        case HB_VCODEC_FFMPEG_DNXHR:
+        case HB_VCODEC_FFMPEG_DNXHR_10BIT:
         case HB_VCODEC_FFMPEG_PRORES:
             return hb_av_profile_get_names(encoder);
 

@@ -12,6 +12,7 @@ ARCH="aarch64"
 CROSS_PREFIX="aarch64-linux-gnu-"
 BUILD_DIR="build/rk3588-gtk"
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEB_PACKAGE="jellyfin-ffmpeg7_7.1.3-3-jammy_arm64.deb"
 
 # Colors for output
 RED='\033[0;31m'
@@ -53,6 +54,9 @@ check_environment() {
 }
 
 # Extract jellyfin-ffmpeg7 deb package
+# NOTE: This function is NOT used by default for GTK builds.
+# GTK builds require bundled FFmpeg from contrib (see BUILD_RK3588.md).
+# This function exists for CLI-only builds that may use jellyfin-ffmpeg7.
 extract_ffmpeg() {
     log_info "Extracting jellyfin-ffmpeg7 package..."
     

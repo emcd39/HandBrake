@@ -31,14 +31,14 @@ static hb_buffer_t * upload(void *hw_frames_ctx, hb_buffer_t **buf_in)
         goto fail;
     }
 
-    av_frame_copy_props(hw_frame, &frame);
+    ret = av_frame_copy_props(hw_frame, &frame);
     if (ret < 0)
     {
         hb_log("hwaccel: failed to copy props");
         goto fail;
     }
 
-    av_hwframe_transfer_data(hw_frame, &frame, 0);
+    ret = av_hwframe_transfer_data(hw_frame, &frame, 0);
     if (ret < 0)
     {
         hb_log("hwaccel: failed to transfer data");

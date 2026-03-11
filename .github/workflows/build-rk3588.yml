@@ -4,13 +4,13 @@ on:
   push:
     branches: [master]
     paths:
-    - '.github/workflows/build-rk3588.yml'
-    - 'make/**'
-    - 'gtk/**'
-    - 'libhb/**'
-    - 'contrib/**'
-    - 'configure'
-    - 'GNUmakefile'
+      - '.github/workflows/build-rk3588.yml'
+      - 'make/**'
+      - 'gtk/**'
+      - 'libhb/**'
+      - 'contrib/**'
+      - 'configure'
+      - 'GNUmakefile'
   workflow_dispatch:
     inputs:
       gtk:
@@ -28,53 +28,53 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-- name: Install build dependencies
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y \
-    build-essential \
-    pkg-config \
-    nasm \
-    cmake \
-    meson \
-    ninja-build \
-    autoconf \
-    automake \
-    libtool \
-    libtool-bin \
-    m4 \
-    python3 \
-    python3-pip \
-    wget \
-    curl \
-    libgtk-4-dev \
-    libglib2.0-dev \
-    libgstreamer1.0-dev \
-    libgstreamer-plugins-base1.0-dev \
-    libwebkit2gtk-4.1-dev \
-    libnotify-dev \
-    libadwaita-1-dev \
-    libass-dev \
-    libmp3lame-dev \
-    libopus-dev \
-    libspeex-dev \
-    libvpx-dev \
-    libbluray-dev \
-    libdvdnav-dev \
-    libdvdread-dev \
-    libjansson-dev \
-    libx264-dev \
-    libx265-dev \
-    bzip2 \
-    zlib1g-dev \
-    libnuma-dev \
-    libturbojpeg-dev \
-    libogg-dev \
-    libvorbis-dev \
-    libtheora-dev \
-    libsvtav1-dev \
-    libxml2-dev \
-    libdrm-dev
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          pkg-config \
+          nasm \
+          cmake \
+          meson \
+          ninja-build \
+          autoconf \
+          automake \
+          libtool \
+          libtool-bin \
+          m4 \
+          python3 \
+          python3-pip \
+          wget \
+          curl \
+          libgtk-4-dev \
+          libglib2.0-dev \
+          libgstreamer1.0-dev \
+          libgstreamer-plugins-base1.0-dev \
+          libwebkit2gtk-4.1-dev \
+          libnotify-dev \
+          libadwaita-1-dev \
+          libass-dev \
+          libmp3lame-dev \
+          libopus-dev \
+          libspeex-dev \
+          libvpx-dev \
+          libbluray-dev \
+          libdvdnav-dev \
+          libdvdread-dev \
+          libjansson-dev \
+          libx264-dev \
+          libx265-dev \
+          bzip2 \
+          zlib1g-dev \
+          libnuma-dev \
+          libturbojpeg-dev \
+          libogg-dev \
+          libvorbis-dev \
+          libtheora-dev \
+          libsvtav1-dev \
+          libxml2-dev \
+          libdrm-dev
 
       - name: Pre-download ffmpeg-rockchip
         run: |
@@ -115,51 +115,51 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            pkg-config \
-            nasm \
-            cmake \
-            meson \
-            ninja-build \
-            autoconf \
-            automake \
-            libtool \
-            libtool-bin \
-            m4 \
-            python3 \
-            python3-pip \
-            wget \
-            curl \
-            libgtk-4-dev \
-            libglib2.0-dev \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libwebkit2gtk-4.1-dev \
-            libnotify-dev \
-            intltool \
-            libgudev-1.0-dev \
-            libadwaita-1-dev \
-            libass-dev \
-            libmp3lame-dev \
-            libopus-dev \
-            libspeex-dev \
-            libvpx-dev \
-            libbluray-dev \
-            libdvdnav-dev \
-            libdvdread-dev \
-            libjansson-dev \
-            libx264-dev \
-            libx265-dev \
-            bzip2 \
-            zlib1g-dev \
-            libnuma-dev \
-            libturbojpeg-dev \
-            libogg-dev \
-            libvorbis-dev \
-            libtheora-dev \
-            libsvtav1-dev \
-            libxml2-dev \
-            libdrm-dev
+          build-essential \
+          pkg-config \
+          nasm \
+          cmake \
+          meson \
+          ninja-build \
+          autoconf \
+          automake \
+          libtool \
+          libtool-bin \
+          m4 \
+          python3 \
+          python3-pip \
+          wget \
+          curl \
+          libgtk-4-dev \
+          libglib2.0-dev \
+          libgstreamer1.0-dev \
+          libgstreamer-plugins-base1.0-dev \
+          libwebkit2gtk-4.1-dev \
+          libnotify-dev \
+          intltool \
+          libgudev-1.0-dev \
+          libadwaita-1-dev \
+          libass-dev \
+          libmp3lame-dev \
+          libopus-dev \
+          libspeex-dev \
+          libvpx-dev \
+          libbluray-dev \
+          libdvdnav-dev \
+          libdvdread-dev \
+          libjansson-dev \
+          libx264-dev \
+          libx265-dev \
+          bzip2 \
+          zlib1g-dev \
+          libnuma-dev \
+          libturbojpeg-dev \
+          libogg-dev \
+          libvorbis-dev \
+          libtheora-dev \
+          libsvtav1-dev \
+          libxml2-dev \
+          libdrm-dev
 
       - name: Pre-download ffmpeg-rockchip
         run: |

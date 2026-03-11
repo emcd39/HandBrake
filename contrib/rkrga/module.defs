@@ -3,6 +3,7 @@ $(eval $(call import.CONTRIB.defs,RKRGA))
 
 # GitHub mirror of gitee.com/nyanmisaka/rga jellyfin-rga branch
 RKRGA.FETCH.url = https://github.com/emcd39/rga/archive/refs/heads/jellyfin-rga.tar.gz
+RKRGA.FETCH.sha256 = 41d69abe805eb82f5deb1f5cd9a38304f17477ed4c3ef6ea7cf7e9761a55f119
 RKRGA.FETCH.git = https://github.com/emcd39/rga.git
 RKRGA.FETCH.branch = jellyfin-rga
 

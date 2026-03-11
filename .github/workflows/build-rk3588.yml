@@ -85,14 +85,14 @@ jobs:
         run: |
           mkdir -p deps
           cd deps
-          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git rkmpp
+          git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
       - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
         run: |
           mkdir -p deps
           cd deps
-          git clone --depth 1 --branch jellyfin-rga https://gitee.com/nyanmisaka/rga.git rkrga
+          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
           echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
 
       - name: Build and install RKMPP
@@ -202,14 +202,14 @@ jobs:
         run: |
           mkdir -p deps
           cd deps
-          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git rkmpp
+          git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
       - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
         run: |
           mkdir -p deps
           cd deps
-          git clone --depth 1 --branch jellyfin-rga https://gitee.com/nyanmisaka/rga.git rkrga
+          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
           echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
 
       - name: Build and install RKMPP

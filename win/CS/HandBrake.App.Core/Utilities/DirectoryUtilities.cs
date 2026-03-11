@@ -17,6 +17,10 @@ namespace HandBrake.App.Core.Utilities
     /// </summary>
     public class DirectoryUtilities
     {
+        private const string WindowsStorageDirectoryName = "HandBrake";
+
+        private const string LinuxStorageDirectoryName = "ghb";
+
         /// <summary>
         /// The get user storage path.
         /// </summary>
@@ -28,13 +32,16 @@ namespace HandBrake.App.Core.Utilities
         /// </returns>
         public static string GetUserStoragePath(bool isNightly)
         {
+            string storagePath = GetStorageDirectory();
+            string appDirectoryName = GetAppDirectoryName();
+
             if (isNightly)
             {
-                return Path.Combine(GetStorageDirectory(), "HandBrake", "Nightly");
+                return Path.Combine(storagePath, appDirectoryName, "Nightly");
             }
             else
             {
-                return Path.Combine(GetStorageDirectory(), "HandBrake");
+                return Path.Combine(storagePath, appDirectoryName);
             }
         }
 
@@ -46,7 +53,7 @@ namespace HandBrake.App.Core.Utilities
         /// </returns>
         public static string GetLogDirectory()
         {
-            return Path.Combine(GetStorageDirectory(), "HandBrake", "logs");
+            return Path.Combine(GetUserStoragePath(false), "logs");
         }
 
         /// <summary>
@@ -88,13 +95,43 @@ namespace HandBrake.App.Core.Utilities
         /// </returns>
         private static string GetStorageDirectory()
         {
-            string storagePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string storagePath = GetDefaultStorageDirectory();
             if (Portable.IsPortable())
             {
                 storagePath = Portable.GetStorageDirectory();
             }
 
             return storagePath;
+        }
+
+        private static string GetDefaultStorageDirectory()
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                string xdgConfigHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+                if (!string.IsNullOrWhiteSpace(xdgConfigHome))
+                {
+                    return xdgConfigHome;
+                }
+
+                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if (!string.IsNullOrWhiteSpace(userProfile))
+                {
+                    return Path.Combine(userProfile, ".config");
+                }
+            }
+
+            return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        }
+
+        private static string GetAppDirectoryName()
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                return LinuxStorageDirectoryName;
+            }
+
+            return WindowsStorageDirectoryName;
         }
     }
 }

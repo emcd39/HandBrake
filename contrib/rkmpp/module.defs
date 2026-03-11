@@ -8,9 +8,6 @@ RKMPP.FETCH.sha256 = 63eb129fb17cab7dbd9775a53013250c787f3fd3d12848c6da96e1f5b81
 RKMPP.FETCH.git = https://github.com/emcd39/mpp.git
 RKMPP.FETCH.branch = master
 
-RKMPP.CONFIGURE.exe = $(NOOP)
-RKMPP.CONFIGURE.args = !dir !exe
-RKMPP.BUILD.make = $(NOOP)
-RKMPP.BUILD.args = !make
-RKMPP.INSTALL.make = $(NOOP)
-RKMPP.INSTALL.args = !make
+RKMPP.CONFIGURE = $(TOUCH.exe) $@
+RKMPP.BUILD = $(TOUCH.exe) $@
+RKMPP.INSTALL = $(TOUCH.exe) $@

@@ -223,6 +223,7 @@ endif
 
 ifeq (1,$(FEATURE.rkmpp))
 FFMPEG.CONFIGURE.extra += \
+--enable-version3 \
 --enable-rkmpp \
 --enable-libdrm \
 --enable-filter=scale_rkrga \

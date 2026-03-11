@@ -103,17 +103,23 @@ jobs:
           make -j$(nproc)
           sudo make install
 
-      - name: Build and install RKRGA
+      - name: Build and install RKRGA (meson)
         run: |
           cd deps/rkrga
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-          make -j$(nproc)
-          sudo make install
+          meson setup rkrga_build \
+            --prefix=/usr \
+            --libdir=lib \
+            --buildtype=release \
+            --default-library=shared \
+            -Dcpp_args=-fpermissive \
+            -Dlibdrm=false \
+            -Dlibrga_demo=false
+          meson configure rkrga_build
+          ninja -C rkrga_build install
 
       - name: Configure HandBrake with RKMPP
         run: |
-          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
           ./configure --disable-gtk --enable-rkmpp --force
           ls -la build/
 
@@ -213,17 +219,23 @@ jobs:
           make -j$(nproc)
           sudo make install
 
-      - name: Build and install RKRGA
+      - name: Build and install RKRGA (meson)
         run: |
           cd deps/rkrga
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-          make -j$(nproc)
-          sudo make install
+          meson setup rkrga_build \
+            --prefix=/usr \
+            --libdir=lib \
+            --buildtype=release \
+            --default-library=shared \
+            -Dcpp_args=-fpermissive \
+            -Dlibdrm=false \
+            -Dlibrga_demo=false
+          meson configure rkrga_build
+          ninja -C rkrga_build install
 
       - name: Configure HandBrake GTK with RKMPP
         run: |
-          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
           ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 

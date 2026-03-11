@@ -17,6 +17,10 @@ on:
         description: 'Build with GTK GUI (for novnc)'
         required: false
         default: 'true'
+      rkmpp:
+        description: 'Enable RKMPP hardware codec'
+        required: false
+        default: 'true'
 
 jobs:
   build-cli:
@@ -47,6 +51,8 @@ jobs:
           python3-pip \
           wget \
           curl \
+          git \
+          libdrm-dev \
           libgtk-4-dev \
           libglib2.0-dev \
           libgstreamer1.0-dev \
@@ -73,19 +79,42 @@ jobs:
           libvorbis-dev \
           libtheora-dev \
           libsvtav1-dev \
-          libxml2-dev \
-          libdrm-dev
+          libxml2-dev
 
-      - name: Pre-download ffmpeg-rockchip
+      - name: Clone RKMPP (nyanmisaka)
         run: |
-          mkdir -p download
-          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git rkmpp
+          echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
-      - name: Configure HandBrake CLI
+      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
         run: |
-          ./configure --disable-gtk --disable-rkmpp --force
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 --branch jellyfin-rga https://gitee.com/nyanmisaka/rga.git rkrga
+          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
+
+      - name: Build and install RKMPP
+        run: |
+          cd deps/rkmpp
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j$(nproc)
+          sudo make install
+
+      - name: Build and install RKRGA
+        run: |
+          cd deps/rkrga
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j$(nproc)
+          sudo make install
+
+      - name: Configure HandBrake with RKMPP
+        run: |
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          ./configure --disable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake CLI
@@ -96,7 +125,7 @@ jobs:
       - name: Upload CLI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: handbrake-cli-arm64
+          name: handbrake-cli-rkmpp-arm64
           path: build/HandBrakeCLI
           retention-days: 7
           if-no-files-found: warn
@@ -130,6 +159,8 @@ jobs:
           python3-pip \
           wget \
           curl \
+          git \
+          libdrm-dev \
           libgtk-4-dev \
           libglib2.0-dev \
           libgstreamer1.0-dev \
@@ -158,19 +189,42 @@ jobs:
           libvorbis-dev \
           libtheora-dev \
           libsvtav1-dev \
-          libxml2-dev \
-          libdrm-dev
+          libxml2-dev
 
-      - name: Pre-download ffmpeg-rockchip
+      - name: Clone RKMPP (nyanmisaka)
         run: |
-          mkdir -p download
-          git clone --depth 1 --branch 8.0 https://github.com/nyanmisaka/ffmpeg-rockchip.git e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          tar -czf download/e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14.tar.gz e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
-          rm -rf e9c9072bd7c1cbcd2800df2a9c45a8d976a88b14
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 https://gitee.com/nyanmisaka/mpp.git rkmpp
+          echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
-      - name: Configure HandBrake GTK
+      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
         run: |
-          ./configure --enable-gtk --disable-rkmpp --force
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 --branch jellyfin-rga https://gitee.com/nyanmisaka/rga.git rkrga
+          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
+
+      - name: Build and install RKMPP
+        run: |
+          cd deps/rkmpp
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j$(nproc)
+          sudo make install
+
+      - name: Build and install RKRGA
+        run: |
+          cd deps/rkrga
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j$(nproc)
+          sudo make install
+
+      - name: Configure HandBrake GTK with RKMPP
+        run: |
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+          ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake GTK
@@ -188,13 +242,11 @@ jobs:
           ls -la build/gtk/ 2>/dev/null || echo "No gtk subdir"
           echo "=== Looking for ghb binary ==="
           find build -name "ghb" -type f 2>/dev/null
-          echo "=== Check if meson was invoked ==="
-          cat build/gtk/build.ninja 2>/dev/null | head -20 || echo "No build.ninja found"
 
       - name: Upload GTK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: handbrake-gtk-arm64
+          name: handbrake-gtk-rkmpp-arm64
           path: |
             build/gtk/src/ghb
             build/HandBrakeCLI

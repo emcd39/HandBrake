@@ -1,8 +1,10 @@
 $(eval $(call import.MODULE.defs,RKRGA,rkrga))
 $(eval $(call import.CONTRIB.defs,RKRGA))
 
-RKRGA.FETCH.url = https://github.com/airockchip/librga/archive/refs/tags/v2.2.0.tar.gz
-RKRGA.FETCH.sha256 = dummy
+RKRGA.FETCH.url = https://gitee.com/nyanmisaka/rga/archive/jellyfin-rga.tar.gz
+RKRGA.FETCH.sha256 = skip
+RKRGA.FETCH.git = https://gitee.com/nyanmisaka/rga.git
+RKRGA.FETCH.branch = jellyfin-rga
 
 RKRGA.CONFIGURE = $(TOUCH.exe) $@
 RKRGA.BUILD.extra = PREFIX="$(RKRGA.CONFIGURE.prefix)"

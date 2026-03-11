@@ -7,6 +7,6 @@ RKRGA.FETCH.sha256 = skip
 RKRGA.FETCH.git = https://github.com/emcd39/rga.git
 RKRGA.FETCH.branch = jellyfin-rga
 
-RKRGA.CONFIGURE = $(TOUCH.exe) $@
+RKRGA.CONFIGURE.cmd = $(NOOP)
 RKRGA.BUILD.extra = PREFIX="$(RKRGA.CONFIGURE.prefix)"
 RKRGA.INSTALL.extra = PREFIX="$(RKRGA.CONFIGURE.prefix)"

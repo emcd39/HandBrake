@@ -7,6 +7,6 @@ RKMPP.FETCH.sha256 = skip
 RKMPP.FETCH.git = https://github.com/emcd39/mpp.git
 RKMPP.FETCH.branch = master
 
-RKMPP.CONFIGURE = $(TOUCH.exe) $@
+RKMPP.CONFIGURE.cmd = $(NOOP)
 RKMPP.BUILD.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"
 RKMPP.INSTALL.extra = PREFIX="$(RKMPP.CONFIGURE.prefix)"

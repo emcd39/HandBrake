@@ -59,6 +59,8 @@ jobs:
           libgstreamer-plugins-base1.0-dev \
           libwebkit2gtk-4.1-dev \
           libnotify-dev \
+          intltool \
+          libgudev-1.0-dev \
           libadwaita-1-dev \
           libass-dev \
           libmp3lame-dev \
@@ -121,7 +123,10 @@ jobs:
       - name: Configure HandBrake with RKMPP
         run: |
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-          ./configure --disable-gtk --enable-rkmpp --force
+          # Reuse the GTK-enabled configuration path, which is currently the
+          # only verified-successful Linux ARM64 path in CI. We still publish
+          # just the CLI binary from this job.
+          ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake CLI

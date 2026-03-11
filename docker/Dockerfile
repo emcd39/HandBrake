@@ -4,9 +4,7 @@
 FROM debian:bookworm-slim
 
 # Build arguments for artifacts
-ARG HANDRAKE_VERSION=1.0.0
-ARG GHB_ARTIFACT_URL=""
-ARG CLI_ARTIFACT_URL=""
+ARG HANDBRAKE_VERSION=1.0.0
 
 # Environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -69,13 +67,10 @@ RUN apt-get update && \
 # Create directories
 RUN mkdir -p /opt/handbrake /var/log/supervisor /data /config
 
-# Download HandBrake binaries from GitHub artifacts
-# In CI, these will be passed as build args
-RUN if [ -n "$GHB_ARTIFACT_URL" ]; then \
-        wget -O /tmp/ghb.zip "$GHB_ARTIFACT_URL" && \
-        unzip /tmp/ghb.zip -d /opt/handbrake && \
-        chmod +x /opt/handbrake/gtk/src/ghb /opt/handbrake/HandBrakeCLI; \
-    fi
+# Copy binaries from workflow-downloaded artifacts.
+COPY artifacts/handbrake-gtk-rkmpp-arm64/build/gtk/src/ghb /opt/handbrake/ghb
+COPY artifacts/handbrake-cli-rkmpp-arm64/build/HandBrakeCLI /opt/handbrake/HandBrakeCLI
+RUN chmod +x /opt/handbrake/ghb /opt/handbrake/HandBrakeCLI
 
 # Set up device permissions for RK3588 hardware
 RUN groupadd -f video && groupadd -f render && groupadd -f mpp && \
@@ -87,8 +82,8 @@ RUN groupadd -f video && groupadd -f render && groupadd -f mpp && \
 
 # Supervisor configuration
 RUN mkdir -p /etc/supervisor/conf.d
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY start.sh /opt/start.sh
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/start.sh /opt/start.sh
 RUN chmod +x /opt/start.sh
 
 # novnc configuration

@@ -102,7 +102,7 @@ jobs:
           cd deps/rkmpp
           mkdir -p build && cd build
           cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-          make -j1
+          make -j$(nproc)
           sudo make install
 
       - name: Build and install RKRGA (meson)
@@ -132,7 +132,7 @@ jobs:
       - name: Build HandBrake CLI
         run: |
           cd build
-          make -j1
+          make -j$(nproc)
 
       - name: Upload CLI artifact
         uses: actions/upload-artifact@v4
@@ -222,7 +222,7 @@ jobs:
           cd deps/rkmpp
           mkdir -p build && cd build
           cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-          make -j1
+          make -j$(nproc)
           sudo make install
 
       - name: Build and install RKRGA (meson)
@@ -249,7 +249,7 @@ jobs:
       - name: Build HandBrake GTK
         run: |
           cd build
-          make -j1 2>&1 | tee build.log
+          make -j$(nproc) 2>&1 | tee build.log
           echo "=== Build log tail ==="
           tail -100 build.log
 

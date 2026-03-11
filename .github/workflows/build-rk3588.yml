@@ -107,7 +107,7 @@ jobs:
         run: |
           cd deps/rkrga
           meson setup rkrga_build \
-            --prefix=/usr \
+            --prefix=/usr/local \
             --libdir=lib \
             --buildtype=release \
             --default-library=shared \
@@ -115,7 +115,8 @@ jobs:
             -Dlibdrm=false \
             -Dlibrga_demo=false
           meson configure rkrga_build
-          ninja -C rkrga_build install
+          ninja -C rkrga_build
+          sudo ninja -C rkrga_build install
 
       - name: Configure HandBrake with RKMPP
         run: |
@@ -223,7 +224,7 @@ jobs:
         run: |
           cd deps/rkrga
           meson setup rkrga_build \
-            --prefix=/usr \
+            --prefix=/usr/local \
             --libdir=lib \
             --buildtype=release \
             --default-library=shared \
@@ -231,7 +232,8 @@ jobs:
             -Dlibdrm=false \
             -Dlibrga_demo=false
           meson configure rkrga_build
-          ninja -C rkrga_build install
+          ninja -C rkrga_build
+          sudo ninja -C rkrga_build install
 
       - name: Configure HandBrake GTK with RKMPP
         run: |
@@ -261,6 +263,4 @@ jobs:
           name: handbrake-gtk-rkmpp-arm64
           path: |
             build/gtk/src/ghb
-            build/HandBrakeCLI
-          retention-days: 7
-          if-no-files-found: warn
+            build/HandBrake

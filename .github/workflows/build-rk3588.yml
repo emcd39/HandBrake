@@ -303,7 +303,13 @@ jobs:
       - name: Prepare GTK runtime bundle
         run: |
           mkdir -p bundle/bin bundle/lib
-          cp build/gtk/src/ghb bundle/bin/
+          GHB_PATH=$(find build -type f -name ghb | head -n 1)
+          if [ -z "$GHB_PATH" ]; then
+            echo "ghb binary not found under build/"
+            find build -maxdepth 5 -type f | sort
+            exit 1
+          fi
+          cp "$GHB_PATH" bundle/bin/ghb
           cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || true
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true

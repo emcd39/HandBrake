@@ -621,6 +621,9 @@ static void hb_common_global_hw_init()
     hb_directx_available();
     hb_register_hwaccel(&hb_hwaccel_mf);
 #endif
+#if defined(__linux__)
+    hb_register_hwaccel(&hb_hwaccel_rkmpp);
+#endif
 #if HB_PROJECT_FEATURE_QSV
     // First initialization and QSV adapters list collection should happen
     // after other hw vendors initializations to prevent device order issues

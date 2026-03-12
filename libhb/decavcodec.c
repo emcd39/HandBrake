@@ -1465,6 +1465,13 @@ int reinit_video_filters(hb_work_private_t * pv)
             hb_dict_set(settings, "format", hb_value_string(av_get_pix_fmt_name(pv->job->input_pix_fmt)));
             hb_avfilter_append_dict(filters, "scale_d3d11", settings);
         }
+        else if (pv->frame->hw_frames_ctx && pv->job->hw_pix_fmt == AV_PIX_FMT_DRM_PRIME)
+        {
+            hb_dict_set(settings, "w", hb_value_int(orig_width));
+            hb_dict_set(settings, "h", hb_value_int(orig_height));
+            hb_dict_set_string(settings, "format", "drm_prime");
+            hb_avfilter_append_dict(filters, "scale_rkrga", settings);
+        }
         else if (hb_av_can_use_zscale(pv->frame->format,
                                       pv->frame->width, pv->frame->height,
                                       orig_width, orig_height))
@@ -1529,6 +1536,39 @@ int reinit_video_filters(hb_work_private_t * pv)
         }
         else
 #endif
+        if (pv->frame->hw_frames_ctx && pv->job->hw_pix_fmt == AV_PIX_FMT_DRM_PRIME)
+        {
+            switch (pv->title->rotation)
+            {
+                case HB_ROTATION_90:
+                    settings = hb_dict_init();
+                    hb_dict_set_string(settings, "transpose", "clock");
+                    hb_dict_set_string(settings, "format", "drm_prime");
+                    hb_avfilter_append_dict(filters, "vpp_rkrga", settings);
+                    hb_log("Auto-Rotating video 90 degrees");
+                    break;
+
+                case HB_ROTATION_180:
+                    settings = hb_dict_init();
+                    hb_dict_set_string(settings, "transpose", "reversal");
+                    hb_dict_set_string(settings, "format", "drm_prime");
+                    hb_avfilter_append_dict(filters, "vpp_rkrga", settings);
+                    hb_log("Auto-Rotating video 180 degrees");
+                    break;
+
+                case HB_ROTATION_270:
+                    settings = hb_dict_init();
+                    hb_dict_set_string(settings, "transpose", "cclock");
+                    hb_dict_set_string(settings, "format", "drm_prime");
+                    hb_avfilter_append_dict(filters, "vpp_rkrga", settings);
+                    hb_log("Auto-Rotating video 270 degrees");
+                    break;
+
+                default:
+                    hb_log("reinit_video_filters: Unknown rotation, failed");
+            }
+        }
+        else
         {
             switch (pv->title->rotation)
             {

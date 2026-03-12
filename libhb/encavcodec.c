@@ -334,6 +334,10 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
                     hb_log("encavcodecInit: H.264 (Intel Quick Sync Video)");
                     codec_name = "h264_qsv";
                     break;
+                case HB_VCODEC_FFMPEG_RKMPP_H264:
+                    hb_log("encavcodecInit: H.264 (RKMPP)");
+                    codec_name = "h264_rkmpp";
+                    break;
             }
         }break;
         case AV_CODEC_ID_HEVC:
@@ -357,6 +361,10 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
                 case HB_VCODEC_FFMPEG_QSV_H265_10BIT:
                     hb_log("encavcodecInit: H.265 (Intel Quick Sync Video)");
                     codec_name = "hevc_qsv";
+                    break;
+                case HB_VCODEC_FFMPEG_RKMPP_H265:
+                    hb_log("encavcodecInit: H.265 (RKMPP)");
+                    codec_name = "hevc_rkmpp";
                     break;
             }
         }break;
@@ -384,6 +392,15 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
                     break;
             }
         }break;
+        case AV_CODEC_ID_MJPEG:
+        {
+            switch (job->vcodec) {
+                case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+                    hb_log("encavcodecInit: MJPEG (RKMPP)");
+                    codec_name = "mjpeg_rkmpp";
+                    break;
+            }
+        } break;
         case AV_CODEC_ID_FFV1:
         {
             switch (job->vcodec) {

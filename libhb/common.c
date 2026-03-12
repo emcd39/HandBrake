@@ -64,15 +64,18 @@ enum
     HB_GID_VCODEC_H264_MF,
     HB_GID_VCODEC_H264_NVENC,
     HB_GID_VCODEC_H264_QSV,
+    HB_GID_VCODEC_H264_RKMPP,
     HB_GID_VCODEC_H264_VCE,
     HB_GID_VCODEC_H264_VT,
     HB_GID_VCODEC_H264_X264,
     HB_GID_VCODEC_H265_MF,
     HB_GID_VCODEC_H265_NVENC,
     HB_GID_VCODEC_H265_QSV,
+    HB_GID_VCODEC_H265_RKMPP,
     HB_GID_VCODEC_H265_VCE,
     HB_GID_VCODEC_H265_VT,
     HB_GID_VCODEC_H265_X265,
+    HB_GID_VCODEC_MJPEG_RKMPP,
     HB_GID_VCODEC_MPEG2,
     HB_GID_VCODEC_MPEG4,
     HB_GID_VCODEC_THEORA,
@@ -303,6 +306,7 @@ hb_encoder_internal_t hb_video_encoders[]  =
     { { "H.264 (x264)",                "x264",             "H.264 (libx264)",                HB_VCODEC_X264_8BIT,                          HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_X264,  },
     { { "H.264 10-bit (x264)",         "x264_10bit",       "H.264 10-bit (libx264)",         HB_VCODEC_X264_10BIT,                         HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_X264,  },
     { { "H.264 (Intel QSV)",           "qsv_h264",         "H.264 (Intel QSV)",              HB_VCODEC_FFMPEG_QSV_H264,                    HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_QSV,   },
+    { { "H.264 (RKMPP)",               "h264_rkmpp",       "H.264 (RKMPP)",                  HB_VCODEC_FFMPEG_RKMPP_H264,                  HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_RKMPP, },
     { { "H.264 (AMD VCE)",             "vce_h264",         "H.264 (AMD VCE)",                HB_VCODEC_FFMPEG_VCE_H264,                    HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_VCE,   },
     { { "H.264 (NVEnc)",               "nvenc_h264",       "H.264 (NVEnc)",                  HB_VCODEC_FFMPEG_NVENC_H264,                  HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_NVENC, },
     { { "H.264 (MediaFoundation)",     "mf_h264",          "H.264 (MediaFoundation)",        HB_VCODEC_FFMPEG_MF_H264,                     HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H264_MF,    },
@@ -313,6 +317,7 @@ hb_encoder_internal_t hb_video_encoders[]  =
     { { "H.265 16-bit (x265)",         "x265_16bit",       "H.265 16-bit (libx265)",         HB_VCODEC_X265_16BIT,                         HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_X265,  },
     { { "H.265 (Intel QSV)",           "qsv_h265",         "H.265 (Intel QSV)",              HB_VCODEC_FFMPEG_QSV_H265,                    HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_QSV,   },
     { { "H.265 10-bit (Intel QSV)",    "qsv_h265_10bit",   "H.265 10-bit (Intel QSV)",       HB_VCODEC_FFMPEG_QSV_H265_10BIT,              HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_QSV,   },
+    { { "H.265 (RKMPP)",               "h265_rkmpp",       "H.265 (RKMPP)",                  HB_VCODEC_FFMPEG_RKMPP_H265,                  HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_RKMPP, },
     { { "H.265 (AMD VCE)",             "vce_h265",         "H.265 (AMD VCE)",                HB_VCODEC_FFMPEG_VCE_H265,                    HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_VCE,   },
     { { "H.265 10-bit (AMD VCE)",      "vce_h265_10bit",   "H.265 10-bit (AMD VCE)",         HB_VCODEC_FFMPEG_VCE_H265_10BIT,              HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_VCE,   },
     { { "H.265 (NVEnc)",               "nvenc_h265",       "H.265 (NVEnc)",                  HB_VCODEC_FFMPEG_NVENC_H265,                  HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_NVENC, },
@@ -322,6 +327,7 @@ hb_encoder_internal_t hb_video_encoders[]  =
     { { "H.265 10-bit (VideoToolbox)", "vt_h265_10bit",    "H.265 10-bit (VideoToolbox)",    HB_VCODEC_VT_H265_10BIT,                      HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_H265_VT,    },
     { { "MPEG-4",                      "mpeg4",            "MPEG-4 (libavcodec)",            HB_VCODEC_FFMPEG_MPEG4,                       HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_MPEG4,      },
     { { "MPEG-2",                      "mpeg2",            "MPEG-2 (libavcodec)",            HB_VCODEC_FFMPEG_MPEG2,                       HB_MUX_AV_MOV|HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_MPEG2,      },
+    { { "MJPEG (RKMPP)",               "mjpeg_rkmpp",      "MJPEG (RKMPP)",                  HB_VCODEC_FFMPEG_RKMPP_MJPEG,                 HB_MUX_AV_MOV|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_MJPEG_RKMPP, },
     { { "VP8",                         "VP8",              "VP8 (libvpx)",                   HB_VCODEC_FFMPEG_VP8,                        HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP8,        },
     { { "VP9",                         "VP9",              "VP9 (libvpx)",                   HB_VCODEC_FFMPEG_VP9,        HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP9,        },
     { { "VP9 10-bit",                  "VP9_10bit",        "VP9 10-bit (libvpx)",            HB_VCODEC_FFMPEG_VP9_10BIT,  HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_VP9,        },
@@ -366,6 +372,15 @@ static int hb_video_encoder_is_enabled(int encoder, int disable_hardware)
             case HB_VCODEC_FFMPEG_NVENC_AV1:
             case HB_VCODEC_FFMPEG_NVENC_AV1_10BIT:
                 return hb_nvenc_av1_available();
+#endif
+
+#if HB_PROJECT_FEATURE_RKMPP
+            case HB_VCODEC_FFMPEG_RKMPP_H264:
+                return avcodec_find_encoder_by_name("h264_rkmpp") != NULL;
+            case HB_VCODEC_FFMPEG_RKMPP_H265:
+                return avcodec_find_encoder_by_name("hevc_rkmpp") != NULL;
+            case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+                return avcodec_find_encoder_by_name("mjpeg_rkmpp") != NULL;
 #endif
 
 #ifdef __APPLE__

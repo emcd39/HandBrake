@@ -139,6 +139,22 @@ jobs:
           cd build
           make -j$(nproc)
 
+      - name: Smoke test CLI RKMPP encoder visibility
+        run: |
+          set -o pipefail
+          build/HandBrakeCLI --help 2>&1 | tee hbcli-help.txt
+          grep -E "h264_rkmpp|h265_rkmpp|mjpeg_rkmpp" hbcli-help.txt
+
+      - name: Smoke test CLI RKMPP encode when hardware is available
+        run: |
+          if [ -e /dev/mpp_service ] || [ -e /dev/rga ]; then
+            ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=640x360:rate=30 -t 2 -pix_fmt yuv420p -c:v libx264 -preset ultrafast -crf 30 smoke_input.mp4
+            build/HandBrakeCLI -i smoke_input.mp4 -o smoke_output.mp4 -e h264_rkmpp -b 1000
+            test -s smoke_output.mp4
+          else
+            echo "RKMPP hardware device not detected on this runner, skip runtime encode smoke test."
+          fi
+
       - name: Prepare CLI runtime bundle
         run: |
           mkdir -p bundle/bin bundle/lib

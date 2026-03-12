@@ -448,6 +448,7 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
     codec = avcodec_find_encoder_by_name(codec_name);
     if (!codec && job->vcodec == HB_VCODEC_FFMPEG_RKMPP_H265)
     {
+        hb_log("encavcodecInit: hevc_rkmpp not found, falling back to h265_rkmpp");
         codec_name = "h265_rkmpp";
         codec = avcodec_find_encoder_by_name(codec_name);
     }

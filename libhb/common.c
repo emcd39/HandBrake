@@ -3048,6 +3048,11 @@ int hb_video_encoder_get_from_name(const char *name)
     if (name == NULL || *name == '\0')
         goto fail;
 
+    if (!strcasecmp(name, "hevc_rkmpp"))
+    {
+        return HB_VCODEC_FFMPEG_RKMPP_H265;
+    }
+
     int i;
     for (i = 0; i < hb_video_encoders_count; i++)
     {

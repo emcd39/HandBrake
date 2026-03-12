@@ -321,15 +321,22 @@ jobs:
           cp bundle/lib/* "$PKGROOT/opt/handbrake-rk3588/lib/" 2>/dev/null || true
           cat > "$PKGROOT/usr/bin/ghb-rk3588" << 'EOF'
           #!/bin/sh
+          export GTK_THEME=${GTK_THEME:-Adwaita}
+          unset GTK_RC_FILES
+          unset GTK2_RC_FILES
           export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
           exec /opt/handbrake-rk3588/bin/ghb "$@"
+          EOF
+          cat > "$PKGROOT/usr/bin/ghb" << 'EOF'
+          #!/bin/sh
+          exec /usr/bin/ghb-rk3588 "$@"
           EOF
           cat > "$PKGROOT/usr/bin/handbrake-cli-rk3588" << 'EOF'
           #!/bin/sh
           export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
           exec /opt/handbrake-rk3588/bin/HandBrakeCLI "$@"
           EOF
-          chmod 0755 "$PKGROOT/usr/bin/ghb-rk3588" "$PKGROOT/usr/bin/handbrake-cli-rk3588"
+          chmod 0755 "$PKGROOT/usr/bin/ghb-rk3588" "$PKGROOT/usr/bin/ghb" "$PKGROOT/usr/bin/handbrake-cli-rk3588"
           cat > "$PKGROOT/DEBIAN/control" << 'EOF'
           Package: handbrake-gtk-rk3588
           Version: 1.0.0

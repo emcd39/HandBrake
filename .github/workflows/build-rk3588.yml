@@ -126,7 +126,7 @@ jobs:
           # Reuse the GTK-enabled configuration path, which is currently the
           # only verified-successful Linux ARM64 path in CI. We still publish
           # just the CLI binary from this job.
-          ./configure --enable-gtk --enable-rkmpp --force
+          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --force
           ls -la build/
 
       - name: Build HandBrake CLI
@@ -281,11 +281,12 @@ jobs:
       - name: Configure HandBrake GTK with RKMPP
         run: |
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-          ./configure --enable-gtk --enable-rkmpp --force
+          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --force
           ls -la build/
 
       - name: Build HandBrake GTK
         run: |
+          set -o pipefail
           cd build
           make -j$(nproc) 2>&1 | tee build.log
           echo "=== Build log tail ==="

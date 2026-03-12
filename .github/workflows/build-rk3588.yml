@@ -134,11 +134,21 @@ jobs:
           cd build
           make -j$(nproc)
 
+      - name: Prepare CLI runtime bundle
+        run: |
+          mkdir -p bundle/bin bundle/lib
+          cp build/HandBrakeCLI bundle/bin/
+          cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
+          ldd bundle/bin/HandBrakeCLI || true
+
       - name: Upload CLI artifact
         uses: actions/upload-artifact@v4
         with:
           name: handbrake-cli-rkmpp-arm64
-          path: build/HandBrakeCLI
+          path: bundle/
           retention-days: 7
           if-no-files-found: warn
 
@@ -262,10 +272,21 @@ jobs:
           echo "=== Looking for ghb binary ==="
           find build -name "ghb" -type f 2>/dev/null
 
+      - name: Prepare GTK runtime bundle
+        run: |
+          mkdir -p bundle/bin bundle/lib
+          cp build/gtk/src/ghb bundle/bin/
+          cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || true
+          cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
+          ldd bundle/bin/ghb || true
+
       - name: Upload GTK artifact
         uses: actions/upload-artifact@v4
         with:
           name: handbrake-gtk-rkmpp-arm64
-          path: |
-            build/gtk/src/ghb
-            build/HandBrake
+          path: bundle/
+          retention-days: 7
+          if-no-files-found: warn

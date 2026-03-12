@@ -1828,6 +1828,11 @@ int hb_video_quality_is_supported(uint32_t codec)
 {
     switch (codec)
     {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return 0;
+
 #ifdef __APPLE__
         case HB_VCODEC_VT_H264:
         case HB_VCODEC_VT_H265:
@@ -1887,6 +1892,9 @@ int hb_video_multipass_is_supported(uint32_t codec, int constant_quality)
         case HB_VCODEC_FFMPEG_QSV_H265_10BIT:
         case HB_VCODEC_FFMPEG_QSV_AV1:
         case HB_VCODEC_FFMPEG_QSV_AV1_10BIT:
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
             return 0;
 
         case HB_VCODEC_FFMPEG_VP9:

@@ -6,7 +6,9 @@ ifeq (1,$(FEATURE.vce))
 __deps__ += AMF
 endif
 ifeq (1,$(FEATURE.nvenc))
+ifneq (1,$(FEATURE.rkmpp))
 __deps__ += NVENC
+endif
 endif
 ifeq (1,$(FEATURE.rkmpp))
 __deps__ += RKMPP RKRGA
@@ -188,14 +190,17 @@ ifeq (1,$(FEATURE.vce))
 endif
 
 ifeq (1,$(FEATURE.nvenc))
+ifneq (1,$(FEATURE.rkmpp))
 FFMPEG.CONFIGURE.extra += \
      --enable-ffnvcodec \
      --enable-encoder=h264_nvenc \
      --enable-encoder=hevc_nvenc \
      --enable-encoder=av1_nvenc
 endif
+endif
 
 ifeq (1,$(FEATURE.nvdec))
+ifneq (1,$(FEATURE.rkmpp))
 FFMPEG.CONFIGURE.extra += \
      --enable-hwaccels \
      --enable-nvdec \
@@ -203,6 +208,7 @@ FFMPEG.CONFIGURE.extra += \
      --enable-cuda \
      --enable-filter=colorspace_cuda \
      --enable-filter=scale_cuda
+endif
 endif
 
 ifeq (1,$(FEATURE.mf))

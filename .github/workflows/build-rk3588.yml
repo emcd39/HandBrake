@@ -144,11 +144,39 @@ jobs:
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/HandBrakeCLI || true
 
+      - name: Build CLI Debian package
+        run: |
+          PKGROOT="$PWD/pkg-cli"
+          rm -rf "$PKGROOT" handbrake-cli-rkmpp-arm64.deb
+          mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/opt/handbrake-rk3588/bin" "$PKGROOT/opt/handbrake-rk3588/lib" "$PKGROOT/usr/bin"
+          cp bundle/bin/HandBrakeCLI "$PKGROOT/opt/handbrake-rk3588/bin/"
+          cp bundle/lib/* "$PKGROOT/opt/handbrake-rk3588/lib/" 2>/dev/null || true
+          cat > "$PKGROOT/usr/bin/handbrake-cli-rk3588" << 'EOF'
+          #!/bin/sh
+          export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
+          exec /opt/handbrake-rk3588/bin/HandBrakeCLI "$@"
+          EOF
+          chmod 0755 "$PKGROOT/usr/bin/handbrake-cli-rk3588"
+          cat > "$PKGROOT/DEBIAN/control" << 'EOF'
+          Package: handbrake-cli-rk3588
+          Version: 1.0.0
+          Section: video
+          Priority: optional
+          Architecture: arm64
+          Maintainer: emcd39 <emcd39@example.com>
+          Depends: libc6, libstdc++6
+          Description: HandBrake CLI for RK3588 with bundled RKMPP/RKRGA runtime
+           CLI wrapper command: handbrake-cli-rk3588
+          EOF
+          dpkg-deb --build "$PKGROOT" handbrake-cli-rkmpp-arm64.deb
+
       - name: Upload CLI artifact
         uses: actions/upload-artifact@v4
         with:
           name: handbrake-cli-rkmpp-arm64
-          path: bundle/
+          path: |
+            bundle/
+            handbrake-cli-rkmpp-arm64.deb
           retention-days: 7
           if-no-files-found: warn
 
@@ -283,10 +311,44 @@ jobs:
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/ghb || true
 
+      - name: Build GTK Debian package
+        run: |
+          PKGROOT="$PWD/pkg-gtk"
+          rm -rf "$PKGROOT" handbrake-gtk-rkmpp-arm64.deb
+          mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/opt/handbrake-rk3588/bin" "$PKGROOT/opt/handbrake-rk3588/lib" "$PKGROOT/usr/bin"
+          cp bundle/bin/ghb "$PKGROOT/opt/handbrake-rk3588/bin/"
+          cp bundle/bin/HandBrakeCLI "$PKGROOT/opt/handbrake-rk3588/bin/" 2>/dev/null || true
+          cp bundle/lib/* "$PKGROOT/opt/handbrake-rk3588/lib/" 2>/dev/null || true
+          cat > "$PKGROOT/usr/bin/ghb-rk3588" << 'EOF'
+          #!/bin/sh
+          export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
+          exec /opt/handbrake-rk3588/bin/ghb "$@"
+          EOF
+          cat > "$PKGROOT/usr/bin/handbrake-cli-rk3588" << 'EOF'
+          #!/bin/sh
+          export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
+          exec /opt/handbrake-rk3588/bin/HandBrakeCLI "$@"
+          EOF
+          chmod 0755 "$PKGROOT/usr/bin/ghb-rk3588" "$PKGROOT/usr/bin/handbrake-cli-rk3588"
+          cat > "$PKGROOT/DEBIAN/control" << 'EOF'
+          Package: handbrake-gtk-rk3588
+          Version: 1.0.0
+          Section: video
+          Priority: optional
+          Architecture: arm64
+          Maintainer: emcd39 <emcd39@example.com>
+          Depends: libc6, libstdc++6, libgtk-4-1, libadwaita-1-0
+          Description: HandBrake GTK for RK3588 with bundled RKMPP/RKRGA runtime
+           GUI wrapper command: ghb-rk3588
+          EOF
+          dpkg-deb --build "$PKGROOT" handbrake-gtk-rkmpp-arm64.deb
+
       - name: Upload GTK artifact
         uses: actions/upload-artifact@v4
         with:
           name: handbrake-gtk-rkmpp-arm64
-          path: bundle/
+          path: |
+            bundle/
+            handbrake-gtk-rkmpp-arm64.deb
           retention-days: 7
           if-no-files-found: warn

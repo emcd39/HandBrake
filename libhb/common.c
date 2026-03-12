@@ -374,14 +374,13 @@ static int hb_video_encoder_is_enabled(int encoder, int disable_hardware)
                 return hb_nvenc_av1_available();
 #endif
 
-#if HB_PROJECT_FEATURE_RKMPP
             case HB_VCODEC_FFMPEG_RKMPP_H264:
                 return avcodec_find_encoder_by_name("h264_rkmpp") != NULL;
             case HB_VCODEC_FFMPEG_RKMPP_H265:
-                return avcodec_find_encoder_by_name("hevc_rkmpp") != NULL;
+                return avcodec_find_encoder_by_name("hevc_rkmpp") != NULL ||
+                       avcodec_find_encoder_by_name("h265_rkmpp") != NULL;
             case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
                 return avcodec_find_encoder_by_name("mjpeg_rkmpp") != NULL;
-#endif
 
 #ifdef __APPLE__
             case HB_VCODEC_VT_H264:

@@ -1390,7 +1390,12 @@ int reinit_video_filters(hb_work_private_t * pv)
         color_range = pv->job->color_range;
     }
 
-    if (pix_fmt            == pv->frame->format  &&
+    int force_hw_repack = pv->job != NULL &&
+                          pv->frame->hw_frames_ctx != NULL &&
+                          pv->job->hw_pix_fmt == AV_PIX_FMT_DRM_PRIME;
+
+    if (!force_hw_repack &&
+        pix_fmt            == pv->frame->format  &&
         orig_width         == pv->frame->width   &&
         orig_height        == pv->frame->height  &&
         color_range        == pv->frame->color_range &&
@@ -1427,7 +1432,8 @@ int reinit_video_filters(hb_work_private_t * pv)
     vrate.den = pv->duration * (clock / 90000.);
 
     filters = hb_value_array_init();
-    if (pix_fmt            != pv->frame->format ||
+    if (force_hw_repack ||
+        pix_fmt            != pv->frame->format ||
         orig_width         != pv->frame->width  ||
         orig_height        != pv->frame->height ||
         color_range        != pv->frame->color_range)

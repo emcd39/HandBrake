@@ -98,6 +98,72 @@ combo_opts_t audio_track_sel_opts =
     d_audio_track_sel_opts
 };
 
+static int
+ghb_rkmpp_hw_decode_for_encoder(int encoder)
+{
+    switch (encoder)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return HB_DECODE_RKMPP | HB_DECODE_FORCE_HW;
+
+        default:
+            return 0;
+    }
+}
+
+static int
+ghb_get_scan_hw_decode(void)
+{
+    signal_user_data_t *ud = ghb_ud();
+
+    if (ud == NULL || ud->settings == NULL)
+    {
+        return 0;
+    }
+
+    return ghb_rkmpp_hw_decode_for_encoder(ghb_get_video_encoder(ud->settings));
+}
+
+static void
+ghb_apply_job_hw_decode_defaults(GhbValue *job_dict)
+{
+    GhbValue   *video_dict;
+    GhbValue   *source_dict;
+    const char *encoder_name;
+    int         encoder;
+    int         hw_decode;
+
+    if (job_dict == NULL)
+    {
+        return;
+    }
+
+    video_dict = ghb_get_job_video_settings(job_dict);
+    source_dict = ghb_get_job_source_settings(job_dict);
+    encoder_name = ghb_dict_get_string(video_dict, "Encoder");
+    encoder = hb_video_encoder_get_from_name(encoder_name);
+    hw_decode = ghb_rkmpp_hw_decode_for_encoder(encoder);
+
+    if (hw_decode == 0)
+    {
+        return;
+    }
+
+    if (!ghb_dict_get_value(video_dict, "HardwareDecode") ||
+        ghb_dict_get_int(video_dict, "HardwareDecode") == 0)
+    {
+        ghb_dict_set_int(video_dict, "HardwareDecode", hw_decode);
+    }
+
+    if (!ghb_dict_get_value(source_dict, "HWDecode") ||
+        ghb_dict_get_int(source_dict, "HWDecode") == 0)
+    {
+        ghb_dict_set_int(source_dict, "HWDecode", hw_decode);
+    }
+}
+
 static options_map_t d_point_to_point_opts[] =
 {
     {N_("Chapters:"), "chapter", 0},
@@ -3663,8 +3729,9 @@ ghb_backend_scan_list (GListModel *files, int titleindex, int preview_count, uin
 {
     hb_list_t *path_list = get_path_list(files);
     hb_list_t *extensions = ghb_get_excluded_extensions_list();
+    int hw_decode = ghb_get_scan_hw_decode();
     hb_scan(h_scan, path_list, titleindex, preview_count, 1, min_duration, max_duration,
-                 0, 0, extensions, 0, keep_duplicate_titles);
+                 0, 0, extensions, hw_decode, keep_duplicate_titles);
     ghb_free_list(path_list);
     ghb_free_list(extensions);
     hb_status.scan.state |= GHB_STATE_SCANNING;
@@ -3683,8 +3750,9 @@ ghb_backend_scan (const char *path, int titleindex, int preview_count, uint64_t 
     hb_list_t *path_list = hb_list_init();
     hb_list_add(path_list, (void *)path);
     hb_list_t *extensions = ghb_get_excluded_extensions_list();
+    int hw_decode = ghb_get_scan_hw_decode();
     hb_scan(h_scan, path_list, titleindex, preview_count, 1, min_duration, max_duration,
-                 0, 0, extensions, 0, keep_duplicate_titles);
+                 0, 0, extensions, hw_decode, keep_duplicate_titles);
     hb_list_close(&path_list);
     ghb_free_list(extensions);
     hb_status.scan.state |= GHB_STATE_SCANNING;
@@ -4801,6 +4869,7 @@ ghb_add_job(hb_handle_t *h, GhbValue *job_dict)
     char     * json_job;
     int        sequence_id;
 
+    ghb_apply_job_hw_decode_defaults(job_dict);
     json_job = hb_value_get_json(job_dict);
     sequence_id = hb_add_json(h, json_job);
     free(json_job);

@@ -1524,6 +1524,9 @@ static void ShowHelp(void)
 #else
 "                           Use 'nvdec' to enable NVDec                  \n"
 "                           Use 'qsv' to enable QSV decoding             \n"
+#if defined(__linux__)
+"                           Use 'rkmpp' to enable Rockchip MPP decoding  \n"
+#endif
 #endif
 "   --disable-hw-decoding   Disable hardware decoding of the video track,\n"
 "                           forcing software decoding instead\n"
@@ -3297,6 +3300,12 @@ static int ParseOptions( int argc, char ** argv )
                     else if (!strcmp(optarg, "qsv"))
                     {
                         hw_decode = HB_DECODE_QSV;
+                    }
+#endif
+#if defined(__linux__)
+                    else if (!strcmp(optarg, "rkmpp"))
+                    {
+                        hw_decode = HB_DECODE_RKMPP;
                     }
 #endif
                     else if (!strcmp(optarg, "mf"))

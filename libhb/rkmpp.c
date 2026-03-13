@@ -84,5 +84,5 @@ hb_hwaccel_t hb_hwaccel_rkmpp =
     .hw_pix_fmt   = AV_PIX_FMT_DRM_PRIME,
     .can_filter   = rkmpp_can_filter,
     .find_decoder = rkmpp_find_decoder,
-    .caps         = HB_HWACCEL_CAP_ROTATE,
+    .caps         = HB_HWACCEL_CAP_SCAN | HB_HWACCEL_CAP_ROTATE,
 };

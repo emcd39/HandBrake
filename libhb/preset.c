@@ -1933,13 +1933,14 @@ int hb_preset_apply_filters(const hb_dict_t *preset, hb_dict_t *job_dict)
 
 int hb_preset_apply_video(const hb_dict_t *preset, hb_dict_t *job_dict)
 {
-    hb_dict_t    *dest_dict, *video_dict;
+    hb_dict_t    *dest_dict, *video_dict, *source_dict;
     hb_value_t   *value, *vcodec_value;
     int           mux, vcodec, vqtype, color_matrix_code;
     const char   *color_range;
     hb_encoder_t *encoder;
 
     dest_dict    = hb_dict_get(job_dict, "Destination");
+    source_dict  = hb_dict_get(job_dict, "Source");
     mux          = hb_container_get_from_name(hb_value_get_string(
                                                 hb_dict_get(dest_dict, "Mux")));
     vcodec_value = hb_dict_get(preset, "VideoEncoder");
@@ -2119,6 +2120,10 @@ int hb_preset_apply_video(const hb_dict_t *preset, hb_dict_t *job_dict)
     if ((value = hb_dict_get(preset, "VideoHWDecode")) != NULL)
     {
         hb_dict_set(video_dict, "HardwareDecode", hb_value_xform(value, HB_VALUE_TYPE_INT));
+        if (source_dict != NULL)
+        {
+            hb_dict_set(source_dict, "HWDecode", hb_value_xform(value, HB_VALUE_TYPE_INT));
+        }
     }
     if ((value = hb_dict_get(preset, "VideoAsyncDepth")) != NULL)
     {

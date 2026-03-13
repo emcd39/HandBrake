@@ -10,6 +10,6 @@ RKRGA.FETCH.branch = jellyfin-rga
 
 RKRGA.build_dir = rkrga_build
 
-RKRGA.CONFIGURE = set -e; cd $(RKRGA.EXTRACT.dir/) && meson setup $(RKRGA.build_dir) --prefix="$(call fn.ABSOLUTE,$(CONTRIB.build/))" --libdir=lib --buildtype=release --default-library=shared -Dcpp_args=-fpermissive -Dlibdrm=false -Dlibrga_demo=false && $(TOUCH.exe) $@
+RKRGA.CONFIGURE = set -e; cd $(RKRGA.EXTRACT.dir/) && meson setup $(RKRGA.build_dir) --prefix="$(call fn.ABSOLUTE,$(CONTRIB.build/))" --libdir=lib --buildtype=release --default-library=shared -Dcpp_args=-fpermissive -Dlibdrm=false -Dlibrga_demo=false && $(TOUCH.exe) "$(call fn.ABSOLUTE,$@)"
 RKRGA.BUILD = set -e; ninja -C $(RKRGA.CONFIGURE.dir) && $(TOUCH.exe) $@
 RKRGA.INSTALL = set -e; ninja -C $(RKRGA.CONFIGURE.dir) install && $(TOUCH.exe) $@

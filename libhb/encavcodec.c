@@ -1390,6 +1390,80 @@ static void get_packets( hb_work_object_t * w, hb_buffer_list_t * list )
     }
 }
 
+static int import_rkmpp_encoder_frame(hb_work_private_t *pv, AVFrame *frame)
+{
+    AVFrame *mapped;
+    int ret;
+
+    if (pv->job == NULL ||
+        pv->job->hw_pix_fmt != AV_PIX_FMT_DRM_PRIME ||
+        pv->context == NULL ||
+        pv->context->hw_frames_ctx == NULL ||
+        frame->hw_frames_ctx == NULL ||
+        frame->hw_frames_ctx == pv->context->hw_frames_ctx)
+    {
+        return 0;
+    }
+
+    mapped = av_frame_alloc();
+    if (mapped == NULL)
+    {
+        hb_log("encavcodec: failed to allocate mapped frame");
+        return 1;
+    }
+
+    mapped->format = pv->job->hw_pix_fmt;
+    ret = av_buffer_replace(&mapped->hw_frames_ctx, pv->context->hw_frames_ctx);
+    if (ret < 0)
+    {
+        hb_log("encavcodec: failed to reference encoder hw frame context");
+        av_frame_free(&mapped);
+        return 1;
+    }
+
+    ret = av_hwframe_map(mapped, frame, 0);
+    if (ret == 0)
+    {
+        av_frame_unref(frame);
+        av_frame_move_ref(frame, mapped);
+        av_frame_free(&mapped);
+        return 0;
+    }
+
+    av_frame_unref(mapped);
+    mapped->format = AV_PIX_FMT_NONE;
+
+    ret = av_hwframe_get_buffer(pv->context->hw_frames_ctx, mapped, 0);
+    if (ret < 0)
+    {
+        hb_log("encavcodec: failed to get encoder hw frame buffer");
+        av_frame_free(&mapped);
+        return 1;
+    }
+
+    ret = av_frame_copy_props(mapped, frame);
+    if (ret < 0)
+    {
+        hb_log("encavcodec: failed to copy frame props for hw import");
+        av_frame_free(&mapped);
+        return 1;
+    }
+
+    ret = av_hwframe_transfer_data(mapped, frame, 0);
+    if (ret < 0)
+    {
+        hb_log("encavcodec: failed to map or transfer drm_prime frame into encoder context");
+        av_frame_free(&mapped);
+        return 1;
+    }
+
+    av_frame_unref(frame);
+    av_frame_move_ref(frame, mapped);
+    av_frame_free(&mapped);
+
+    return 0;
+}
+
 static void Encode( hb_work_object_t *w, hb_buffer_t **buf_in,
                     hb_buffer_list_t *list )
 {
@@ -1430,6 +1504,11 @@ static void Encode( hb_work_object_t *w, hb_buffer_t **buf_in,
     // Convert the hb_buffer_t to avframe
     // This will consume the hb_buffer_t and make it NULL
     hb_video_buffer_to_avframe(&frame, buf_in);
+    if (import_rkmpp_encoder_frame(pv, &frame))
+    {
+        av_frame_unref(&frame);
+        return;
+    }
     frame.pts = pv->frameno_in++;
     frame.duration = 0;
 

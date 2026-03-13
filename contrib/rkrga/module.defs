@@ -8,6 +8,8 @@ RKRGA.FETCH.sha256 = 41d69abe805eb82f5deb1f5cd9a38304f17477ed4c3ef6ea7cf7e9761a5
 RKRGA.FETCH.git = https://github.com/emcd39/rga.git
 RKRGA.FETCH.branch = jellyfin-rga
 
-RKRGA.CONFIGURE = $(TOUCH.exe) $@
-RKRGA.BUILD = $(TOUCH.exe) $@
-RKRGA.INSTALL = $(TOUCH.exe) $@
+RKRGA.build_dir = rkrga_build
+
+RKRGA.CONFIGURE = set -e; cd $(RKRGA.EXTRACT.dir/) && meson setup $(RKRGA.build_dir) --prefix="$(call fn.ABSOLUTE,$(CONTRIB.build/))" --libdir=lib --buildtype=release --default-library=shared -Dcpp_args=-fpermissive -Dlibdrm=false -Dlibrga_demo=false && $(TOUCH.exe) $@
+RKRGA.BUILD = set -e; ninja -C $(RKRGA.CONFIGURE.dir) && $(TOUCH.exe) $@
+RKRGA.INSTALL = set -e; ninja -C $(RKRGA.CONFIGURE.dir) install && $(TOUCH.exe) $@

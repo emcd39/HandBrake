@@ -95,13 +95,6 @@ jobs:
           git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
-      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
-        run: |
-          mkdir -p deps
-          cd deps
-          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
-          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
-
       - name: Build and install RKMPP
         run: |
           cd deps/rkmpp
@@ -109,21 +102,6 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
           make -j$(nproc)
           sudo make install
-
-      - name: Build and install RKRGA (meson)
-        run: |
-          cd deps/rkrga
-          meson setup rkrga_build \
-            --prefix=/usr/local \
-            --libdir=lib \
-            --buildtype=release \
-            --default-library=shared \
-            -Dcpp_args=-fpermissive \
-            -Dlibdrm=false \
-            -Dlibrga_demo=false
-          meson configure rkrga_build
-          ninja -C rkrga_build
-          sudo ninja -C rkrga_build install
 
       - name: Configure HandBrake with RKMPP
         run: |
@@ -162,7 +140,7 @@ jobs:
           mkdir -p bundle/bin bundle/lib
           cp build/HandBrakeCLI bundle/bin/
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
-          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp build/contrib/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/HandBrakeCLI || true
@@ -273,13 +251,6 @@ jobs:
           git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
-      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
-        run: |
-          mkdir -p deps
-          cd deps
-          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
-          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
-
       - name: Build and install RKMPP
         run: |
           cd deps/rkmpp
@@ -287,21 +258,6 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
           make -j$(nproc)
           sudo make install
-
-      - name: Build and install RKRGA (meson)
-        run: |
-          cd deps/rkrga
-          meson setup rkrga_build \
-            --prefix=/usr/local \
-            --libdir=lib \
-            --buildtype=release \
-            --default-library=shared \
-            -Dcpp_args=-fpermissive \
-            -Dlibdrm=false \
-            -Dlibrga_demo=false
-          meson configure rkrga_build
-          ninja -C rkrga_build
-          sudo ninja -C rkrga_build install
 
       - name: Configure HandBrake GTK with RKMPP
         run: |
@@ -338,7 +294,7 @@ jobs:
           cp "$GHB_PATH" bundle/bin/ghb
           cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || true
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
-          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp build/contrib/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/ghb || true

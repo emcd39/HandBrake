@@ -241,6 +241,11 @@ static const enum AVPixelFormat h26x_mf_pix_fmts[] =
     AV_PIX_FMT_NV12, AV_PIX_FMT_NONE
 };
 
+static const enum AVPixelFormat rkmpp_pix_formats[] =
+{
+    AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE
+};
+
 static const enum AVPixelFormat nvenc_pix_formats_10bit[] =
 {
     AV_PIX_FMT_P010, AV_PIX_FMT_NONE
@@ -2007,6 +2012,11 @@ const int* hb_av_get_pix_fmts(int encoder, const char *profile)
         case HB_VCODEC_FFMPEG_QSV_H265_10BIT:
         case HB_VCODEC_FFMPEG_QSV_AV1_10BIT:
             return qsv_10bit_pix_formats;
+
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return rkmpp_pix_formats;
 
         case HB_VCODEC_FFMPEG_MPEG2:
         {

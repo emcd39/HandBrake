@@ -24,6 +24,7 @@ static int rkmpp_can_filter(hb_list_t *filters)
 
         switch (filter->id)
         {
+            case HB_FILTER_VFR:
             case HB_FILTER_AVFILTER:
             case HB_FILTER_CROP_SCALE:
             case HB_FILTER_PAD:

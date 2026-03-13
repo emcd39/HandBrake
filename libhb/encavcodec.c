@@ -1412,27 +1412,6 @@ static int import_rkmpp_encoder_frame(hb_work_private_t *pv, AVFrame *frame)
         return 1;
     }
 
-    mapped->format = pv->job->hw_pix_fmt;
-    ret = av_buffer_replace(&mapped->hw_frames_ctx, pv->context->hw_frames_ctx);
-    if (ret < 0)
-    {
-        hb_log("encavcodec: failed to reference encoder hw frame context");
-        av_frame_free(&mapped);
-        return 1;
-    }
-
-    ret = av_hwframe_map(mapped, frame, 0);
-    if (ret == 0)
-    {
-        av_frame_unref(frame);
-        av_frame_move_ref(frame, mapped);
-        av_frame_free(&mapped);
-        return 0;
-    }
-
-    av_frame_unref(mapped);
-    mapped->format = AV_PIX_FMT_NONE;
-
     ret = av_hwframe_get_buffer(pv->context->hw_frames_ctx, mapped, 0);
     if (ret < 0)
     {
@@ -1452,7 +1431,7 @@ static int import_rkmpp_encoder_frame(hb_work_private_t *pv, AVFrame *frame)
     ret = av_hwframe_transfer_data(mapped, frame, 0);
     if (ret < 0)
     {
-        hb_log("encavcodec: failed to map or transfer drm_prime frame into encoder context");
+        hb_log("encavcodec: failed to transfer drm_prime frame into encoder context");
         av_frame_free(&mapped);
         return 1;
     }

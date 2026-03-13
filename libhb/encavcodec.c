@@ -1399,6 +1399,7 @@ static int import_rkmpp_encoder_frame(hb_work_private_t *pv, AVFrame *frame)
         pv->job->hw_pix_fmt != AV_PIX_FMT_DRM_PRIME ||
         pv->context == NULL ||
         pv->context->hw_frames_ctx == NULL ||
+        frame->format == AV_PIX_FMT_DRM_PRIME ||
         frame->hw_frames_ctx == NULL ||
         frame->hw_frames_ctx == pv->context->hw_frames_ctx)
     {

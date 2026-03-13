@@ -140,8 +140,13 @@ ghb_apply_job_hw_decode_defaults(GhbValue *job_dict)
         return;
     }
 
-    video_dict = ghb_get_job_video_settings(job_dict);
-    source_dict = ghb_get_job_source_settings(job_dict);
+    video_dict = ghb_dict_get(job_dict, "Video");
+    source_dict = ghb_dict_get(job_dict, "Source");
+    if (video_dict == NULL || source_dict == NULL)
+    {
+        return;
+    }
+
     encoder_name = ghb_dict_get_string(video_dict, "Encoder");
     encoder = hb_video_encoder_get_from_name(encoder_name);
     hw_decode = ghb_rkmpp_hw_decode_for_encoder(encoder);
@@ -5064,4 +5069,3 @@ const gchar *ghb_get_filter_name (hb_filter_object_t *filter)
             return filter->name;
     }
 }
-

@@ -3,6 +3,10 @@ name: Build Docker Image
 on:
   workflow_dispatch:
     inputs:
+      source_run_id:
+        description: "build-rk3588 workflow run ID to package"
+        required: true
+        type: string
       push_image:
         description: "Push image to GHCR"
         required: false
@@ -13,28 +17,11 @@ on:
         required: false
         default: ""
         type: string
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/docker-build.yml"
-      - "docker/**"
-      - "gtk/**"
-      - "libhb/**"
-      - "contrib/**"
-      - "make/**"
-      - "configure"
-      - "GNUmakefile"
-  pull_request:
-    paths:
-      - ".github/workflows/docker-build.yml"
-      - "docker/**"
-      - "gtk/**"
-      - "libhb/**"
-      - "contrib/**"
-      - "make/**"
-      - "configure"
-      - "GNUmakefile"
+  workflow_run:
+    workflows:
+      - Build HandBrake for RK3588 (ARM64)
+    types:
+      - completed
 
 env:
   IMAGE_NAME: ghcr.io/emcd39/handbrake-rk3588
@@ -42,8 +29,14 @@ env:
 jobs:
   docker:
     name: Build RK3588 Docker image
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'master')
     runs-on: ubuntu-24.04-arm
     permissions:
+      actions: read
       contents: read
       packages: write
 
@@ -60,18 +53,23 @@ jobs:
         run: |
           set -euo pipefail
 
-          DOCKER_IMAGE_VERSION="${GITHUB_SHA::7}"
-          PUSH_IMAGE=false
-
-          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "master" ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
+            SOURCE_RUN_ID="${{ github.event.workflow_run.id }}"
+            SOURCE_SHA="${{ github.event.workflow_run.head_sha }}"
             PUSH_IMAGE=true
-          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "${{ inputs.push_image }}" == "true" ]]; then
-            PUSH_IMAGE=true
+          else
+            SOURCE_RUN_ID="${{ inputs.source_run_id }}"
+            SOURCE_SHA="${GITHUB_SHA}"
+            PUSH_IMAGE=false
+            if [[ "${{ inputs.push_image }}" == "true" ]]; then
+              PUSH_IMAGE=true
+            fi
           fi
 
-          TAGS="${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+          DOCKER_IMAGE_VERSION="${SOURCE_SHA::7}"
+          TAGS="${IMAGE_NAME}:sha-${SOURCE_SHA::7}"
 
-          if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
             TAGS="${TAGS},${IMAGE_NAME}:latest"
           fi
 
@@ -81,10 +79,26 @@ jobs:
           fi
 
           {
+            echo "source_run_id=${SOURCE_RUN_ID}"
+            echo "source_sha=${SOURCE_SHA}"
             echo "push_image=${PUSH_IMAGE}"
             echo "docker_image_version=${DOCKER_IMAGE_VERSION}"
             echo "tags=${TAGS}"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Download GTK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/handbrake-gtk-rkmpp-arm64
+          gh run download "${{ steps.meta.outputs.source_run_id }}" \
+            --repo "${{ github.repository }}" \
+            --name handbrake-gtk-rkmpp-arm64 \
+            --dir artifacts/handbrake-gtk-rkmpp-arm64
+          test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb
+          test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/HandBrakeCLI
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -95,7 +109,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
       - name: Build image
         uses: docker/build-push-action@v6

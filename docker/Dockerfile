@@ -9,7 +9,7 @@
 #
 
 ARG DOCKER_IMAGE_VERSION=dev
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=24.04
 ARG BASEIMAGE_GUI_VERSION=4.11.3
 ARG HANDBRAKE_VERSION=1.0.0
 ARG RKMPP_URL=https://github.com/emcd39/mpp/archive/refs/heads/master.tar.gz
@@ -141,8 +141,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libbluray2 \
         libdrm2 \
         libdvdnav4 \
-        libdvdread8 \
-        libglib2.0-0 \
+        libdvdread8t64 \
+        libglib2.0-0t64 \
         libgstreamer-gl1.0-0 \
         libgstreamer-plugins-base1.0-0 \
         libgstreamer1.0-0 \
@@ -156,13 +156,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopus0 \
         librsvg2-common \
         libspeex1 \
-        libsvtav1enc0 \
+        libsvtav1enc1d1 \
         libtheora0 \
         libturbojpeg0 \
         libvorbis0a \
-        libvpx7 \
+        libvpx9 \
         libwebkit2gtk-4.1-0 \
-        libx264-163 \
+        libx264-164 \
         libx265-199 \
         libxml2 \
         lsscsi \

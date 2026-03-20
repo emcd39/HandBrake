@@ -62,7 +62,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libvpx9 \
         libwebkit2gtk-4.1-0 \
         libx264-164 \
-        libx265-dev \
+        libx265-199 \
         libxml2 \
         lsscsi \
         pciutils \

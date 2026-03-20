@@ -50,6 +50,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libgtk-4-dev \
         libgudev-1.0-dev \
         libjansson-dev \
+        libtool-bin \
         libmp3lame-dev \
         libnotify-dev \
         libnuma-dev \
@@ -72,6 +73,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ninja-build \
         pkg-config \
         python3 \
+        python3-pip \
         wget \
         xz-utils \
         yasm \
@@ -112,7 +114,6 @@ RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:${PKG_CON
         --prefix=/usr/local \
         --enable-gtk \
         --enable-rkmpp \
-        --disable-nvenc \
         --force && \
     make -C build -j"$(nproc)" && \
     make -C build install DESTDIR=/tmp/handbrake-install
@@ -131,51 +132,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     add-apt-repository -y universe && \
     apt-get update && apt-get install -y --no-install-recommends \
         adwaita-icon-theme \
-        bzip2 \
-        ca-certificates \
-        git \
         curl \
         fonts-cantarell \
-        intltool \
         gstreamer1.0-libav \
         gstreamer1.0-plugins-base \
         gstreamer1.0-plugins-good \
-        libadwaita-1-dev \
-        libass-dev \
-        libbluray-dev \
-        libdrm-dev \
-        libdvdnav-dev \
-        libdvdread-dev \
-        libglib2.0-dev \
-        libgstreamer-plugins-base1.0-dev \
-        libgstreamer1.0-dev \
-        libgtk-4-dev \
-        libgudev-1.0-dev \
-        libjansson-dev \
-        libmp3lame-dev \
-        libnotify-dev \
-        libnuma-dev \
-        libogg-dev \
-        libopus-dev \
+        libadwaita-1-0 \
+        libass9 \
+        libbluray2 \
+        libdrm2 \
+        libdvdnav4 \
+        libdvdread8t64 \
+        libglib2.0-0t64 \
+        libgstreamer-gl1.0-0 \
+        libgstreamer-plugins-base1.0-0 \
+        libgstreamer1.0-0 \
+        libgtk-4-1 \
+        libgudev-1.0-0 \
+        libjansson4 \
+        libmp3lame0 \
+        libnotify4 \
+        libnuma1 \
+        libogg0 \
+        libopus0 \
         librsvg2-common \
-        libspeex-dev \
-        libsvtav1-dev \
-        libtheora-dev \
-        libturbojpeg-dev \
-        libvorbis-dev \
-        libvpx-dev \
-        libwebkit2gtk-4.1-dev \
-        libx264-dev \
-        libx265-dev \
-        libxml2-dev \
+        libspeex1 \
+        libsvtav1enc1d1 \
+        libtheora0 \
+        libturbojpeg0 \
+        libvorbis0a \
+        libvpx9 \
+        libwebkit2gtk-4.1-0 \
+        libx264-164 \
+        libx265-199 \
+        libxml2 \
         lsscsi \
-        m4 \
-        meson \
-        ninja-build \
         pciutils \
-        pkg-config \
-        python3 \
-        wget \
         x11-utils && \
     apt-get purge -y --auto-remove software-properties-common && \
     rm -rf /var/lib/apt/lists/*

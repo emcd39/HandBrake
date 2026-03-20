@@ -9,7 +9,7 @@
 #
 
 ARG DOCKER_IMAGE_VERSION=dev
-ARG UBUNTU_VERSION=24.04
+ARG UBUNTU_VERSION=22.04
 ARG BASEIMAGE_GUI_VERSION=4.11.3
 ARG HANDBRAKE_VERSION=1.0.0
 ARG RKMPP_URL=https://github.com/emcd39/mpp/archive/refs/heads/master.tar.gz
@@ -26,6 +26,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        software-properties-common && \
+    add-apt-repository -y universe && \
+    apt-get update && apt-get install -y --no-install-recommends \
         autoconf \
         automake \
         bzip2 \
@@ -73,6 +76,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         xz-utils \
         yasm \
         zlib1g-dev && \
+    apt-get purge -y --auto-remove software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -O /tmp/rkmpp.tar.gz "${RKMPP_URL}" && \
@@ -137,8 +141,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libbluray2 \
         libdrm2 \
         libdvdnav4 \
-        libdvdread8t64 \
-        libglib2.0-0t64 \
+        libdvdread8 \
+        libglib2.0-0 \
         libgstreamer-gl1.0-0 \
         libgstreamer-plugins-base1.0-0 \
         libgstreamer1.0-0 \
@@ -152,7 +156,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopus0 \
         librsvg2-common \
         libspeex1 \
-        libsvtav1enc1d1 \
+        libsvtav1enc1 \
         libtheora0 \
         libturbojpeg0 \
         libvorbis0a \

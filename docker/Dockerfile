@@ -9,67 +9,71 @@
 #
 
 ARG DOCKER_IMAGE_VERSION=dev
-ARG ALPINE_VERSION=3.20
+ARG UBUNTU_VERSION=24.04
 ARG BASEIMAGE_GUI_VERSION=4.11.3
 ARG HANDBRAKE_VERSION=1.0.0
 ARG RKMPP_URL=https://github.com/emcd39/mpp/archive/refs/heads/master.tar.gz
 ARG RKRGA_URL=https://github.com/emcd39/rga/archive/refs/heads/jellyfin-rga.tar.gz
 
-FROM --platform=$BUILDPLATFORM alpine:${ALPINE_VERSION} AS handbrake-builder
+FROM --platform=$BUILDPLATFORM ubuntu:${UBUNTU_VERSION} AS handbrake-builder
 
 ARG HANDBRAKE_VERSION
 ARG RKMPP_URL
 ARG RKRGA_URL
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /build
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         autoconf \
         automake \
-        bash \
-        build-base \
         bzip2 \
+        build-essential \
+        ca-certificates \
         cmake \
         curl \
         git \
-        glib-dev \
-        gstreamer-dev \
-        gst-plugins-base-dev \
-        gtk4.0-dev \
         intltool \
-        jansson-dev \
-        lame-dev \
-        libadwaita-dev \
+        libadwaita-1-dev \
         libass-dev \
         libbluray-dev \
         libdrm-dev \
         libdvdnav-dev \
         libdvdread-dev \
-        libgudev-dev \
+        libglib2.0-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libgstreamer1.0-dev \
+        libgtk-4-dev \
+        libgudev-1.0-dev \
+        libjansson-dev \
+        libmp3lame-dev \
         libnotify-dev \
+        libnuma-dev \
         libogg-dev \
+        libopus-dev \
+        libspeex-dev \
+        libsvtav1-dev \
         libtheora-dev \
         libtool \
         libturbojpeg-dev \
         libvorbis-dev \
         libvpx-dev \
+        libwebkit2gtk-4.1-dev \
+        libx264-dev \
+        libx265-dev \
         libxml2-dev \
-        linux-headers \
+        m4 \
         meson \
         nasm \
-        ninja \
-        numactl-dev \
-        opus-dev \
-        pkgconf \
+        ninja-build \
+        pkg-config \
         python3 \
-        speex-dev \
-        svt-av1-dev \
-        webkit2gtk-4.1-dev \
         wget \
-        x264-dev \
-        x265-dev \
-        xz \
-        yasm
+        xz-utils \
+        yasm \
+        zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN wget -O /tmp/rkmpp.tar.gz "${RKMPP_URL}" && \
     mkdir -p /build/rkmpp && \
@@ -109,57 +113,55 @@ RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:${PKG_CON
     make -C build -j"$(nproc)" && \
     make -C build install DESTDIR=/tmp/handbrake-install
 
-FROM jlesage/baseimage-gui:alpine-${ALPINE_VERSION}-v${BASEIMAGE_GUI_VERSION}
+FROM jlesage/baseimage-gui:ubuntu-${UBUNTU_VERSION}-v${BASEIMAGE_GUI_VERSION}
 
 ARG DOCKER_IMAGE_VERSION
 ARG HANDBRAKE_VERSION
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /tmp
 
-RUN add-pkg \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         adwaita-icon-theme \
-        bash \
-        coreutils \
-        expect \
-        findutils \
-        font-cantarell \
-        glib \
-        gstreamer \
-        gst-libav \
-        gst-plugins-base \
-        gst-plugins-good \
-        gtk4.0 \
-        jansson \
-        lame-libs \
-        libadwaita \
-        libass \
-        libbluray \
-        libdrm \
-        libdvdcss \
-        libdvdnav \
-        libdvdread \
-        libgudev \
-        libnotify \
-        libogg \
-        libsamplerate \
-        libstdc++ \
-        libtheora \
-        libturbojpeg \
-        libvorbis \
-        libvpx \
+        curl \
+        fonts-cantarell \
+        gstreamer1.0-libav \
+        gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        libadwaita-1-0 \
+        libass9 \
+        libbluray2 \
+        libdrm2 \
+        libdvdnav4 \
+        libdvdread8t64 \
+        libglib2.0-0t64 \
+        libgstreamer-gl1.0-0 \
+        libgstreamer-plugins-base1.0-0 \
+        libgstreamer1.0-0 \
+        libgtk-4-1 \
+        libgudev-1.0-0 \
+        libjansson4 \
+        libmp3lame0 \
+        libnotify4 \
+        libnuma1 \
+        libogg0 \
+        libopus0 \
+        librsvg2-common \
+        libspeex1 \
+        libsvtav1enc1d1 \
+        libtheora0 \
+        libturbojpeg0 \
+        libvorbis0a \
+        libvpx9 \
+        libwebkit2gtk-4.1-0 \
+        libx264-164 \
+        libx265-199 \
         libxml2 \
-        librsvg \
         lsscsi \
-        numactl \
-        opus \
         pciutils \
-        speex \
-        svt-av1 \
-        webkit2gtk-4.1 \
-        x264-libs \
-        x265-libs \
-        xdpyinfo \
-        xz
+        x11-utils && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \
     install_app_icon.sh "${APP_ICON_URL}"

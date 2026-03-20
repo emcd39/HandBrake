@@ -56,13 +56,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libspeex1 \
         libsvtav1enc1d1 \
         libtheora0 \
-        libturbojpeg0 \
+        libturbojpeg \
         libvorbis0a \
         libvorbisenc2 \
         libvpx9 \
         libwebkit2gtk-4.1-0 \
         libx264-164 \
-        libx265-215 \
+        libx265-dev \
         libxml2 \
         lsscsi \
         pciutils \

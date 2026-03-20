@@ -123,6 +123,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        software-properties-common && \
+    add-apt-repository -y universe && \
+    apt-get update && apt-get install -y --no-install-recommends \
         adwaita-icon-theme \
         curl \
         fonts-cantarell \
@@ -161,6 +164,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lsscsi \
         pciutils \
         x11-utils && \
+    apt-get purge -y --auto-remove software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \

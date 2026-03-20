@@ -156,13 +156,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopus0 \
         librsvg2-common \
         libspeex1 \
-        libsvtav1enc1 \
+        libsvtav1enc0 \
         libtheora0 \
         libturbojpeg0 \
         libvorbis0a \
-        libvpx9 \
+        libvpx7 \
         libwebkit2gtk-4.1-0 \
-        libx264-164 \
+        libx264-163 \
         libx265-199 \
         libxml2 \
         lsscsi \

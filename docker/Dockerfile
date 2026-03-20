@@ -1,107 +1,192 @@
-# HandBrake GTK with RK3588 hardware acceleration via jellyfin-ffmpeg
-# Uses novnc for web-based GUI access
+# syntax=docker/dockerfile:1.7
+#
+# HandBrake RK3588 Docker image.
+# Rewritten to follow the jlesage/docker-handbrake approach:
+# - multi-stage build
+# - jlesage/baseimage-gui runtime
+# - /startapp.sh startup contract
+# - GUI over web/VNC on ports 5800/5900
+#
 
-FROM debian:bookworm-slim
-
-# Build arguments for artifacts
+ARG DOCKER_IMAGE_VERSION=dev
+ARG ALPINE_VERSION=3.20
+ARG BASEIMAGE_GUI_VERSION=4.11.3
 ARG HANDBRAKE_VERSION=1.0.0
+ARG RKMPP_URL=https://github.com/emcd39/mpp/archive/refs/heads/master.tar.gz
+ARG RKRGA_URL=https://github.com/emcd39/rga/archive/refs/heads/jellyfin-rga.tar.gz
 
-# Environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV DISPLAY=:0
-ENV NOVNC_PORT=6080
+FROM --platform=$BUILDPLATFORM alpine:${ALPINE_VERSION} AS handbrake-builder
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    # GTK runtime
-    libgtk-4-1 \
-    libglib2.0-0 \
-    libadwaita-1-0 \
-    libnotify4 \
-    libwebkit2gtk-4.1-0 \
-    # X11 and display
-    xvfb \
-    x11vnc \
-    # novnc dependencies
-    novnc \
-    websockify \
-    # Media libraries
-    libass9 \
-    libmp3lame0 \
-    libopus0 \
-    libspeex1 \
-    libvpx9 \
-    libbluray2 \
-    libdvdnav4 \
-    libdvdread8 \
-    libjansson4 \
-    libx264-164 \
-    libx265-199 \
-    libtheora0 \
-    libvorbis0a \
-    libogg0 \
-    libturbojpeg0 \
-    libnuma1 \
-    libsvtav1enc0 \
-    libxml2 \
-    # Rockchip hardware acceleration
-    librga2 \
-    librockchip-mpp1 \
-    librockchip-mpp-dev \
-    # Process management
-    supervisor \
-    procps \
-    wget \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+ARG HANDBRAKE_VERSION
+ARG RKMPP_URL
+ARG RKRGA_URL
 
-# Download and install jellyfin-ffmpeg (contains ffmpeg-rockchip patches)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg2 && \
-    echo "deb [arch=arm64] https://repo.jellyfin.com/debian bookworm main" > /etc/apt/sources.list.d/jellyfin.list && \
-    wget -O - https://repo.jellyfin.com/jellyfin_team.gpg.key | apt-key add - && \
-    apt-get update && \
-    apt-get install -y jellyfin-ffmpeg7 && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /build
 
-# Create directories
-RUN mkdir -p /opt/handbrake /var/log/supervisor /data /config
+RUN apk add --no-cache \
+        autoconf \
+        automake \
+        bash \
+        build-base \
+        bzip2 \
+        cmake \
+        curl \
+        git \
+        glib-dev \
+        gstreamer-dev \
+        gst-plugins-base-dev \
+        gtk4.0-dev \
+        intltool \
+        jansson-dev \
+        lame-dev \
+        libadwaita-dev \
+        libass-dev \
+        libbluray-dev \
+        libdrm-dev \
+        libdvdnav-dev \
+        libdvdread-dev \
+        libgudev-dev \
+        libnotify-dev \
+        libogg-dev \
+        libtheora-dev \
+        libtool \
+        libturbojpeg-dev \
+        libvorbis-dev \
+        libvpx-dev \
+        libxml2-dev \
+        linux-headers \
+        meson \
+        nasm \
+        ninja \
+        numactl-dev \
+        opus-dev \
+        pkgconf \
+        python3 \
+        speex-dev \
+        svt-av1-dev \
+        webkit2gtk-4.1-dev \
+        wget \
+        x264-dev \
+        x265-dev \
+        xz \
+        yasm
 
-# Copy binaries from workflow-downloaded artifacts.
-COPY artifacts/handbrake-gtk-rkmpp-arm64/build/gtk/src/ghb /opt/handbrake/ghb
-COPY artifacts/handbrake-cli-rkmpp-arm64/build/HandBrakeCLI /opt/handbrake/HandBrakeCLI
-RUN chmod +x /opt/handbrake/ghb /opt/handbrake/HandBrakeCLI
+RUN wget -O /tmp/rkmpp.tar.gz "${RKMPP_URL}" && \
+    mkdir -p /build/rkmpp && \
+    tar -xzf /tmp/rkmpp.tar.gz -C /build/rkmpp --strip-components=1 && \
+    cmake -S /build/rkmpp -B /build/rkmpp/build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DBUILD_SHARED_LIBS=ON && \
+    cmake --build /build/rkmpp/build -j"$(nproc)" && \
+    cmake --install /build/rkmpp/build
 
-# Set up device permissions for RK3588 hardware
-RUN groupadd -f video && groupadd -f render && groupadd -f mpp && \
-    useradd -m -G video,render,mpp handbrake && \
-    echo 'KERNEL=="mpp_service", MODE="0660", GROUP="mpp"' > /etc/udev/rules.d/99-mpp.rules && \
-    echo 'KERNEL=="rga", MODE="0660", GROUP="mpp"' >> /etc/udev/rules.d/99-mpp.rules && \
-    echo 'KERNEL=="dma_heap", MODE="0660", GROUP="render"' > /etc/udev/rules.d/99-dma-heap.rules && \
-    echo 'KERNEL=="dri/card*", MODE="0660", GROUP="video"' >> /etc/udev/rules.d/99-dri.rules
+RUN wget -O /tmp/rkrga.tar.gz "${RKRGA_URL}" && \
+    mkdir -p /build/rkrga && \
+    tar -xzf /tmp/rkrga.tar.gz -C /build/rkrga --strip-components=1 && \
+    meson setup /build/rkrga/build /build/rkrga \
+        --prefix=/usr/local \
+        --libdir=lib \
+        --buildtype=release \
+        --default-library=shared \
+        -Dcpp_args=-fpermissive \
+        -Dlibdrm=false \
+        -Dlibrga_demo=false && \
+    ninja -C /build/rkrga/build && \
+    ninja -C /build/rkrga/build install
 
-# Supervisor configuration
-RUN mkdir -p /etc/supervisor/conf.d
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-COPY docker/start.sh /opt/start.sh
-RUN chmod +x /opt/start.sh
+COPY . /src/HandBrake
 
-# novnc configuration
-RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+WORKDIR /src/HandBrake
 
-# Set library path for jellyfin-ffmpeg
-ENV LD_LIBRARY_PATH=/usr/lib/jellyfin/lib:$LD_LIBRARY_PATH
-ENV PATH=/usr/lib/jellyfin/bin:$PATH
+RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:${PKG_CONFIG_PATH} && \
+    ./configure \
+        --prefix=/usr/local \
+        --enable-gtk \
+        --enable-rkmpp \
+        --disable-nvenc \
+        --force && \
+    make -C build -j"$(nproc)" && \
+    make -C build install DESTDIR=/tmp/handbrake-install
 
-# Expose novnc port
-EXPOSE 6080
+FROM jlesage/baseimage-gui:alpine-${ALPINE_VERSION}-v${BASEIMAGE_GUI_VERSION}
 
-# Volume for media files
-VOLUME ["/data", "/config"]
+ARG DOCKER_IMAGE_VERSION
+ARG HANDBRAKE_VERSION
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:6080/ || exit 1
+WORKDIR /tmp
 
-# Start supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+RUN add-pkg \
+        adwaita-icon-theme \
+        bash \
+        coreutils \
+        expect \
+        findutils \
+        font-cantarell \
+        glib \
+        gstreamer \
+        gst-libav \
+        gst-plugins-base \
+        gst-plugins-good \
+        gtk4.0 \
+        jansson \
+        lame-libs \
+        libadwaita \
+        libass \
+        libbluray \
+        libdrm \
+        libdvdcss \
+        libdvdnav \
+        libdvdread \
+        libgudev \
+        libnotify \
+        libogg \
+        libsamplerate \
+        libstdc++ \
+        libtheora \
+        libturbojpeg \
+        libvorbis \
+        libvpx \
+        libxml2 \
+        librsvg \
+        lsscsi \
+        numactl \
+        opus \
+        pciutils \
+        speex \
+        svt-av1 \
+        webkit2gtk-4.1 \
+        x264-libs \
+        x265-libs \
+        xdpyinfo \
+        xz
+
+RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \
+    install_app_icon.sh "${APP_ICON_URL}"
+
+COPY docker/start.sh /startapp.sh
+COPY --from=handbrake-builder /tmp/handbrake-install/ /
+COPY --from=handbrake-builder /usr/local/lib/librockchip_mpp.so* /usr/local/lib/
+COPY --from=handbrake-builder /usr/local/lib/libmpp.so* /usr/local/lib/
+COPY --from=handbrake-builder /usr/local/lib/librga.so* /usr/local/lib/
+
+RUN chmod 0755 /startapp.sh && \
+    set-cont-env APP_NAME "HandBrake" && \
+    set-cont-env APP_VERSION "${HANDBRAKE_VERSION}" && \
+    set-cont-env DOCKER_IMAGE_VERSION "${DOCKER_IMAGE_VERSION}" && \
+    set-cont-env DISABLE_GLX 1 && \
+    true
+
+ENV HANDBRAKE_DEBUG=0 \
+    HANDBRAKE_GUI=1 \
+    LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
+VOLUME ["/storage"]
+VOLUME ["/output"]
+VOLUME ["/watch"]
+
+LABEL org.label-schema.name="handbrake-rk3588" \
+      org.label-schema.description="Docker container for HandBrake GTK on RK3588, inspired by jlesage/docker-handbrake" \
+      org.label-schema.version="${DOCKER_IMAGE_VERSION}" \
+      org.label-schema.vcs-url="https://github.com/jlesage/docker-handbrake" \
+      org.label-schema.schema-version="1.0"

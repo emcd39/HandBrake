@@ -1,86 +1,133 @@
-name: Build Docker Image and Debian Package
+name: Build Docker Image
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Package version'
-        required: true
-        default: '1.0.0'
+      push_image:
+        description: "Push image to GHCR"
+        required: false
+        default: true
+        type: boolean
+      image_tag:
+        description: "Additional image tag"
+        required: false
+        default: ""
+        type: string
   push:
-    branches: [master]
+    branches:
+      - master
     paths:
-      - 'docker/**'
-      - 'packaging/**'
-      - '.github/workflows/docker-build.yml'
+      - ".github/workflows/docker-build.yml"
+      - "docker/**"
+      - "gtk/**"
+      - "libhb/**"
+      - "contrib/**"
+      - "make/**"
+      - "configure"
+      - "GNUmakefile"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-build.yml"
+      - "docker/**"
+      - "gtk/**"
+      - "libhb/**"
+      - "contrib/**"
+      - "make/**"
+      - "configure"
+      - "GNUmakefile"
+
+env:
+  IMAGE_NAME: ghcr.io/emcd39/handbrake-rk3588
 
 jobs:
-  build-docker:
+  docker:
+    name: Build RK3588 Docker image
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
 
-      - name: Download GTK artifact from latest build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Derive image metadata
+        id: meta
+        shell: bash
         run: |
-          gh run download --repo emcd39/HandBrake --pattern "handbrake-gtk-rkmpp-arm64" --dir artifacts || true
-          gh run download --repo emcd39/HandBrake --pattern "handbrake-cli-rkmpp-arm64" --dir artifacts || true
-          ls -la artifacts/ || echo "No artifacts found"
+          set -euo pipefail
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+          DOCKER_IMAGE_VERSION="${GITHUB_SHA::7}"
+          PUSH_IMAGE=false
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "master" ]]; then
+            PUSH_IMAGE=true
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "${{ inputs.push_image }}" == "true" ]]; then
+            PUSH_IMAGE=true
+          fi
+
+          TAGS="${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+
+          if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            TAGS="${TAGS},${IMAGE_NAME}:latest"
+          fi
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -n "${{ inputs.image_tag }}" ]]; then
+            TAGS="${TAGS},${IMAGE_NAME}:${{ inputs.image_tag }}"
+            DOCKER_IMAGE_VERSION="${{ inputs.image_tag }}"
+          fi
+
+          {
+            echo "push_image=${PUSH_IMAGE}"
+            echo "docker_image_version=${DOCKER_IMAGE_VERSION}"
+            echo "tags=${TAGS}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Log in to GHCR
+        if: steps.meta.outputs.push_image == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Build image
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
           platforms: linux/arm64
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ inputs.version || '1.0.0' }}
+          push: ${{ steps.meta.outputs.push_image == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            HANDBRAKE_VERSION=${{ inputs.version || '1.0.0' }}
+            DOCKER_IMAGE_VERSION=${{ steps.meta.outputs.docker_image_version }}
+            HANDBRAKE_VERSION=${{ steps.meta.outputs.docker_image_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  build-deb:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Export image as artifact
+        if: steps.meta.outputs.push_image != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/arm64
+          outputs: type=docker,dest=/tmp/handbrake-rk3588-arm64.tar
+          build-args: |
+            DOCKER_IMAGE_VERSION=${{ steps.meta.outputs.docker_image_version }}
+            HANDBRAKE_VERSION=${{ steps.meta.outputs.docker_image_version }}
+          cache-from: type=gha
 
-      - name: Download GTK artifact
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download --repo emcd39/HandBrake --pattern "handbrake-gtk-rkmpp-arm64" --dir artifacts || true
-          gh run download --repo emcd39/HandBrake --pattern "handbrake-cli-rkmpp-arm64" --dir artifacts || true
-
-      - name: Build Debian package
-        run: |
-          chmod +x packaging/build-deb.sh
-          ./packaging/build-deb.sh "${{ inputs.version || '1.0.0' }}" artifacts
-
-      - name: Upload Debian package
+      - name: Upload image artifact
+        if: steps.meta.outputs.push_image != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: handbrake-rk3588-deb
-          path: "*.deb"
-          retention-days: 30
+          name: handbrake-rk3588-image-arm64
+          path: /tmp/handbrake-rk3588-arm64.tar
+          retention-days: 7

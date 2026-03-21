@@ -28,44 +28,45 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         fonts-cantarell \
-        libadwaita-1-0 \
-        libass9 \
-        libbluray2 \
-        libdrm2 \
-        libdvdnav4 \
-        libdvdread8t64 \
-        libegl1 \
-        libgbm1 \
-        libglib2.0-0t64 \
-        libgstreamer-gl1.0-0 \
-        libgstreamer-plugins-base1.0-0 \
-        libgstreamer1.0-0 \
-        libgtk-4-1 \
-        libgudev-1.0-0 \
-        libjansson4 \
-        libmp3lame0 \
-        libnotify4 \
-        libnuma1 \
-        libogg0 \
-        libopus0 \
-        librsvg2-2 \
+        git \
         gstreamer1.0-libav \
         gstreamer1.0-plugins-base \
         gstreamer1.0-plugins-good \
+        intltool \
+        libadwaita-1-dev \
+        libass-dev \
+        libbluray-dev \
+        libdrm-dev \
+        libdvdnav-dev \
+        libdvdread-dev \
+        libglib2.0-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libgstreamer1.0-dev \
+        libgtk-4-dev \
+        libgudev-1.0-dev \
+        libjansson-dev \
+        libmp3lame-dev \
+        libnotify-dev \
+        libnuma-dev \
+        libogg-dev \
+        libopus-dev \
         librsvg2-common \
-        libspeex1 \
-        libsvtav1enc1d1 \
-        libtheora0 \
-        libturbojpeg \
-        libvorbis0a \
-        libvorbisenc2 \
-        libvpx9 \
-        libwebkit2gtk-4.1-0 \
-        libx264-164 \
-        libx265-199 \
-        libxml2 \
+        libspeex-dev \
+        libsvtav1-dev \
+        libtheora-dev \
+        libturbojpeg-dev \
+        libvorbis-dev \
+        libvpx-dev \
+        libwebkit2gtk-4.1-dev \
+        libx264-dev \
+        libx265-dev \
+        libxml2-dev \
         lsscsi \
+        m4 \
+        meson \
+        ninja-build \
         pciutils \
+        pkg-config \
         python3 \
         wget \
         x11-utils && \
@@ -78,29 +79,18 @@ RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/mast
 COPY docker/start.sh /startapp.sh
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb /usr/local/bin/ghb
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/HandBrakeCLI /usr/local/bin/HandBrakeCLI
-COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/lib/ /opt/handbrake/lib/
+COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/lib/ /usr/local/lib/
 
 RUN chmod 0755 /startapp.sh /usr/local/bin/ghb /usr/local/bin/HandBrakeCLI && \
-    find /opt/handbrake/lib -maxdepth 1 \( \
-        -name 'libdrm.so*' -o \
-        -name 'libgbm.so*' -o \
-        -name 'libEGL.so*' -o \
-        -name 'libGL.so*' -o \
-        -name 'libGLESv2.so*' -o \
-        -name 'libwayland-*.so*' -o \
-        -name 'libxcb*.so*' -o \
-        -name 'libX11.so*' -o \
-        -name 'libXau.so*' -o \
-        -name 'libXdmcp.so*' \
-    \) -delete && \
     set-cont-env APP_NAME "HandBrake" && \
     set-cont-env APP_VERSION "${HANDBRAKE_VERSION}" && \
     set-cont-env DOCKER_IMAGE_VERSION "${DOCKER_IMAGE_VERSION}" && \
+    set-cont-env DISABLE_GLX 1 && \
     true
 
 ENV HANDBRAKE_DEBUG=0 \
     HANDBRAKE_GUI=1 \
-    LD_LIBRARY_PATH=/opt/handbrake/lib:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
 
 VOLUME ["/storage"]
 VOLUME ["/output"]

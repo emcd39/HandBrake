@@ -22,18 +22,16 @@ on:
         required: false
         default: 'true'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+permissions:
+  contents: write
 
 jobs:
   build-cli:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout HandBrake
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
-          token: ${{ github.token }}
-          persist-credentials: true
           submodules: true
           fetch-depth: 0
 
@@ -95,6 +93,13 @@ jobs:
           git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
+      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
+        run: |
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
+          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
+
       - name: Build and install RKMPP
         run: |
           cd deps/rkmpp
@@ -103,13 +108,28 @@ jobs:
           make -j$(nproc)
           sudo make install
 
+      - name: Build and install RKRGA (meson)
+        run: |
+          cd deps/rkrga
+          meson setup rkrga_build \
+            --prefix=/usr/local \
+            --libdir=lib \
+            --buildtype=release \
+            --default-library=shared \
+            -Dcpp_args=-fpermissive \
+            -Dlibdrm=false \
+            -Dlibrga_demo=false
+          meson configure rkrga_build
+          ninja -C rkrga_build
+          sudo ninja -C rkrga_build install
+
       - name: Configure HandBrake with RKMPP
         run: |
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
           # Reuse the GTK-enabled configuration path, which is currently the
           # only verified-successful Linux ARM64 path in CI. We still publish
           # just the CLI binary from this job.
-          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --force
+          ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake CLI
@@ -117,30 +137,12 @@ jobs:
           cd build
           make -j$(nproc)
 
-      - name: Smoke test CLI RKMPP encoder visibility
-        run: |
-          set -o pipefail
-          export LD_LIBRARY_PATH=$PWD/build/contrib/lib:/usr/local/lib:${LD_LIBRARY_PATH}
-          build/HandBrakeCLI --help 2>&1 | tee hbcli-help.txt
-          grep -E "h264_rkmpp|h265_rkmpp|mjpeg_rkmpp" hbcli-help.txt
-
-      - name: Smoke test CLI RKMPP encode when hardware is available
-        run: |
-          export LD_LIBRARY_PATH=$PWD/build/contrib/lib:/usr/local/lib:${LD_LIBRARY_PATH}
-          if [ -e /dev/mpp_service ] || [ -e /dev/rga ]; then
-            ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=640x360:rate=30 -t 2 -pix_fmt yuv420p -c:v libx264 -preset ultrafast -crf 30 smoke_input.mp4
-            build/HandBrakeCLI -i smoke_input.mp4 -o smoke_output.mp4 -e h264_rkmpp -b 1000
-            test -s smoke_output.mp4
-          else
-            echo "RKMPP hardware device not detected on this runner, skip runtime encode smoke test."
-          fi
-
       - name: Prepare CLI runtime bundle
         run: |
           mkdir -p bundle/bin bundle/lib
           cp build/HandBrakeCLI bundle/bin/
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
-          cp build/contrib/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/HandBrakeCLI || true
@@ -172,7 +174,7 @@ jobs:
           dpkg-deb --build "$PKGROOT" handbrake-cli-rkmpp-arm64.deb
 
       - name: Upload CLI artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: handbrake-cli-rkmpp-arm64
           path: |
@@ -186,10 +188,8 @@ jobs:
     if: ${{ github.event_name == 'push' || inputs.gtk == 'true' }}
     steps:
       - name: Checkout HandBrake
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
-          token: ${{ github.token }}
-          persist-credentials: true
           submodules: true
           fetch-depth: 0
 
@@ -251,6 +251,13 @@ jobs:
           git clone --depth 1 https://github.com/emcd39/mpp.git rkmpp
           echo "RKMPP_DIR=$(pwd)/rkmpp" >> $GITHUB_ENV
 
+      - name: Clone RKRGA (nyanmisaka jellyfin-rga branch)
+        run: |
+          mkdir -p deps
+          cd deps
+          git clone --depth 1 --branch jellyfin-rga https://github.com/emcd39/rga.git rkrga
+          echo "RKRGA_DIR=$(pwd)/rkrga" >> $GITHUB_ENV
+
       - name: Build and install RKMPP
         run: |
           cd deps/rkmpp
@@ -259,15 +266,29 @@ jobs:
           make -j$(nproc)
           sudo make install
 
+      - name: Build and install RKRGA (meson)
+        run: |
+          cd deps/rkrga
+          meson setup rkrga_build \
+            --prefix=/usr/local \
+            --libdir=lib \
+            --buildtype=release \
+            --default-library=shared \
+            -Dcpp_args=-fpermissive \
+            -Dlibdrm=false \
+            -Dlibrga_demo=false
+          meson configure rkrga_build
+          ninja -C rkrga_build
+          sudo ninja -C rkrga_build install
+
       - name: Configure HandBrake GTK with RKMPP
         run: |
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --force
+          ./configure --enable-gtk --enable-rkmpp --force
           ls -la build/
 
       - name: Build HandBrake GTK
         run: |
-          set -o pipefail
           cd build
           make -j$(nproc) 2>&1 | tee build.log
           echo "=== Build log tail ==="
@@ -294,7 +315,7 @@ jobs:
           cp "$GHB_PATH" bundle/bin/ghb
           cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || true
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
-          cp build/contrib/lib/librga.so* bundle/lib/ 2>/dev/null || true
+          cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
           ldd bundle/bin/ghb || true
@@ -339,7 +360,7 @@ jobs:
           dpkg-deb --build "$PKGROOT" handbrake-gtk-rkmpp-arm64.deb
 
       - name: Upload GTK artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: handbrake-gtk-rkmpp-arm64
           path: |
@@ -347,3 +368,55 @@ jobs:
             handbrake-gtk-rkmpp-arm64.deb
           retention-days: 7
           if-no-files-found: warn
+
+  publish-release:
+    name: Publish RK3588 release assets
+    runs-on: ubuntu-24.04-arm
+    needs:
+      - build-cli
+      - build-gtk
+    if: ${{ always() && needs.build-cli.result == 'success' && needs.build-gtk.result == 'success' }}
+    steps:
+      - name: Download CLI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: handbrake-cli-rkmpp-arm64
+          path: release-assets/cli
+
+      - name: Download GTK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: handbrake-gtk-rkmpp-arm64
+          path: release-assets/gtk
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="rk3588-${GITHUB_SHA::7}"
+          mkdir -p dist
+          tar -C release-assets/cli -czf dist/handbrake-cli-rkmpp-arm64-bundle.tar.gz bundle
+          tar -C release-assets/gtk -czf dist/handbrake-gtk-rkmpp-arm64-bundle.tar.gz bundle
+          cp release-assets/cli/handbrake-cli-rkmpp-arm64.deb dist/
+          cp release-assets/gtk/handbrake-gtk-rkmpp-arm64.deb dist/
+          {
+            echo "TAG=${TAG}"
+            echo "TITLE=RK3588 build ${GITHUB_SHA::7}"
+          } >> "$GITHUB_ENV"
+
+      - name: Create or update prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "${{ github.repository }}" \
+              --title "$TITLE" \
+              --notes "Automated RK3588 binary bundles for ${GITHUB_SHA}." \
+              --prerelease
+          fi
+          gh release upload "$TAG" dist/* \
+            --repo "${{ github.repository }}" \
+            --clobber

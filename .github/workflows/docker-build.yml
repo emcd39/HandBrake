@@ -5,7 +5,12 @@ on:
     inputs:
       source_run_id:
         description: "build-rk3588 workflow run ID to package"
-        required: true
+        required: false
+        type: string
+      source_tag:
+        description: "Release tag to package, for example rk3588-abcdef0"
+        required: false
+        default: ""
         type: string
       push_image:
         description: "Push image to GHCR"
@@ -56,14 +61,26 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
             SOURCE_RUN_ID="${{ github.event.workflow_run.id }}"
             SOURCE_SHA="${{ github.event.workflow_run.head_sha }}"
+            SOURCE_TAG="rk3588-${SOURCE_SHA::7}"
             PUSH_IMAGE=true
           else
             SOURCE_RUN_ID="${{ inputs.source_run_id }}"
             SOURCE_SHA="${GITHUB_SHA}"
+            SOURCE_TAG="${{ inputs.source_tag }}"
             PUSH_IMAGE=false
             if [[ "${{ inputs.push_image }}" == "true" ]]; then
               PUSH_IMAGE=true
             fi
+          fi
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -n "${SOURCE_RUN_ID}" && -z "${SOURCE_TAG}" ]]; then
+            SOURCE_SHA="$(gh api "repos/${{ github.repository }}/actions/runs/${SOURCE_RUN_ID}" --jq '.head_sha')"
+            SOURCE_TAG="rk3588-${SOURCE_SHA::7}"
+          fi
+
+          if [[ -z "${SOURCE_TAG}" ]]; then
+            echo "Either source_tag or source_run_id must be provided for workflow_dispatch." >&2
+            exit 1
           fi
 
           DOCKER_IMAGE_VERSION="${SOURCE_SHA::7}"
@@ -81,22 +98,25 @@ jobs:
           {
             echo "source_run_id=${SOURCE_RUN_ID}"
             echo "source_sha=${SOURCE_SHA}"
+            echo "source_tag=${SOURCE_TAG}"
             echo "push_image=${PUSH_IMAGE}"
             echo "docker_image_version=${DOCKER_IMAGE_VERSION}"
             echo "tags=${TAGS}"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Download GTK artifact
+      - name: Download GTK release bundle
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts/handbrake-gtk-rkmpp-arm64
-          gh run download "${{ steps.meta.outputs.source_run_id }}" \
+          gh release download "${{ steps.meta.outputs.source_tag }}" \
             --repo "${{ github.repository }}" \
-            --name handbrake-gtk-rkmpp-arm64 \
-            --dir artifacts/handbrake-gtk-rkmpp-arm64
+            --pattern handbrake-gtk-rkmpp-arm64-bundle.tar.gz \
+            --dir /tmp/handbrake-release
+          tar -xzf /tmp/handbrake-release/handbrake-gtk-rkmpp-arm64-bundle.tar.gz \
+            -C artifacts/handbrake-gtk-rkmpp-arm64
           test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb
           test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/HandBrakeCLI
 

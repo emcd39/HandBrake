@@ -129,7 +129,7 @@ jobs:
           # Reuse the GTK-enabled configuration path, which is currently the
           # only verified-successful Linux ARM64 path in CI. We still publish
           # just the CLI binary from this job.
-          ./configure --enable-gtk --enable-rkmpp --force
+          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --disable-nvdec --force
           ls -la build/
 
       - name: Build HandBrake CLI
@@ -284,13 +284,13 @@ jobs:
       - name: Configure HandBrake GTK with RKMPP
         run: |
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-          ./configure --enable-gtk --enable-rkmpp --force
+          ./configure --enable-gtk --enable-rkmpp --disable-nvenc --disable-nvdec --force
           ls -la build/
 
       - name: Build HandBrake GTK
         run: |
           cd build
-          make -j$(nproc) 2>&1 | tee build.log
+          make -j$(nproc) gtk.build 2>&1 | tee build.log
           echo "=== Build log tail ==="
           tail -100 build.log
 
@@ -306,7 +306,16 @@ jobs:
       - name: Prepare GTK runtime bundle
         run: |
           mkdir -p bundle/bin bundle/lib
-          GHB_PATH=$(find build -type f -name ghb | head -n 1)
+          GHB_PATH=""
+          for candidate in build/gtk/src/ghb build/gtk/ghb; do
+            if [ -f "$candidate" ]; then
+              GHB_PATH="$candidate"
+              break
+            fi
+          done
+          if [ -z "$GHB_PATH" ]; then
+            GHB_PATH=$(find build -type f -name ghb | head -n 1)
+          fi
           if [ -z "$GHB_PATH" ]; then
             echo "ghb binary not found under build/"
             find build -maxdepth 5 -type f | sort

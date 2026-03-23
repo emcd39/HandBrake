@@ -78,7 +78,7 @@ RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/mast
 
 COPY docker/start.sh /startapp.sh
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb /usr/local/bin/ghb
-COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/HandBrakeCLI /usr/local/bin/HandBrakeCLI
+COPY artifacts/handbrake-cli-rkmpp-arm64/bundle/bin/HandBrakeCLI /usr/local/bin/HandBrakeCLI
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/lib/ /usr/local/lib/
 
 RUN chmod 0755 /startapp.sh /usr/local/bin/ghb /usr/local/bin/HandBrakeCLI && \

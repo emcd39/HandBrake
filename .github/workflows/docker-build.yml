@@ -105,18 +105,19 @@ jobs:
             echo "tags=${TAGS}"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Download GTK release bundle
+      - name: Download release bundles
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p artifacts/handbrake-gtk-rkmpp-arm64 /tmp/handbrake-release
+          mkdir -p artifacts/handbrake-gtk-rkmpp-arm64 artifacts/handbrake-cli-rkmpp-arm64 /tmp/handbrake-release
           rm -f /tmp/handbrake-release/handbrake-gtk-rkmpp-arm64-bundle.tar.gz
+          rm -f /tmp/handbrake-release/handbrake-cli-rkmpp-arm64-bundle.tar.gz
           for attempt in 1 2 3 4 5; do
             if gh release download "${{ steps.meta.outputs.source_tag }}" \
               --repo "${{ github.repository }}" \
-              --pattern handbrake-gtk-rkmpp-arm64-bundle.tar.gz \
+              --pattern "handbrake-*-rkmpp-arm64-bundle.tar.gz" \
               --dir /tmp/handbrake-release; then
               break
             fi
@@ -129,9 +130,12 @@ jobs:
           done
           tar -xzf /tmp/handbrake-release/handbrake-gtk-rkmpp-arm64-bundle.tar.gz \
             -C artifacts/handbrake-gtk-rkmpp-arm64
+          tar -xzf /tmp/handbrake-release/handbrake-cli-rkmpp-arm64-bundle.tar.gz \
+            -C artifacts/handbrake-cli-rkmpp-arm64
           find artifacts/handbrake-gtk-rkmpp-arm64 -maxdepth 3 -type f | sort
+          find artifacts/handbrake-cli-rkmpp-arm64 -maxdepth 3 -type f | sort
           test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb
-          test -f artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/HandBrakeCLI
+          test -f artifacts/handbrake-cli-rkmpp-arm64/bundle/bin/HandBrakeCLI
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

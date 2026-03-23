@@ -1,0 +1,39 @@
+services:
+  handbrake-rk3588:
+    image: ghcr.io/emcd39/handbrake-rk3588:latest
+    container_name: handbrake-rk3588
+    restart: unless-stopped
+
+    ports:
+      - "5800:5800"
+      - "5900:5900"
+
+    environment:
+      TZ: Asia/Shanghai
+      USER_ID: "0"
+      GROUP_ID: "0"
+      KEEP_APP_RUNNING: "1"
+      CLEAN_TMP_DIR: "1"
+      UMASK: "002"
+      TAKE_CONFIG_OWNERSHIP: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      GSK_RENDERER: "cairo"
+
+    volumes:
+      - ./config:/config
+      - ./storage:/storage
+      - ./watch:/watch
+      - ./output:/output
+      - /lib/modules:/lib/modules:ro
+      - /sys/firmware:/sys/firmware:ro
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/mpp_service:/dev/mpp_service
+      - /dev/rga:/dev/rga
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mali0:/dev/mali0
+
+    pid: host
+    shm_size: "1gb"
+    privileged: true

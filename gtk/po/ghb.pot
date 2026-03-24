@@ -3780,3 +3780,12 @@ msgstr ""
 #: data/fr.handbrake.ghb.desktop.in:10
 msgid "Format Converter;Video Encoder;"
 msgstr ""
+
+msgid "Variable Bitrate (kbps):"
+msgstr ""
+
+msgid "Constant Bitrate (kbps):"
+msgstr ""
+
+msgid "Set a constant bitrate target for RKMPP encoding."
+msgstr ""

@@ -4061,3 +4061,12 @@ msgid "Format Converter;Video Encoder;"
 msgstr ""
 "Format Converter;Video "
 "Encoder;geshizhuanhuanqi;shipinbianmaqi;zhuanmaqi;格式转换器;视频编码器;转码器;"
+
+msgid "Variable Bitrate (kbps):"
+msgstr "可变码率 (kbps):"
+
+msgid "Constant Bitrate (kbps):"
+msgstr "固定码率 (kbps):"
+
+msgid "Set a constant bitrate target for RKMPP encoding."
+msgstr "为 RKMPP 编码设置固定码率目标。"

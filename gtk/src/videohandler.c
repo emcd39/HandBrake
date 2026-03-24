@@ -83,21 +83,29 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     GtkWidget *vbr_button = ghb_builder_widget("vquality_type_bitrate");
     GtkWidget *cbr_button = ghb_builder_widget("vquality_type_cbr");
     GtkWidget *bitrate = ghb_builder_widget("VideoAvgBitrate");
+    GtkWidget *bitrate_cbr = ghb_builder_widget("VideoAvgBitrateCBR");
     GtkWidget *placeholder = ghb_builder_widget("placeholder_label");
+    GtkWidget *placeholder_cbr = ghb_builder_widget("placeholder_label_cbr");
 
     gtk_widget_set_visible(cbr_button, is_rkmpp);
+    gtk_widget_set_visible(bitrate_cbr, is_rkmpp);
+    gtk_widget_set_visible(placeholder_cbr, is_rkmpp);
     gtk_check_button_set_label(GTK_CHECK_BUTTON(cqp_button),
                                _("Constant Quality:"));
     gtk_check_button_set_label(GTK_CHECK_BUTTON(vbr_button),
                                is_rkmpp ? _("Variable Bitrate (kbps):")
                                         : _("Bitrate (kbps):    "));
+    gtk_check_button_set_label(GTK_CHECK_BUTTON(cbr_button),
+                               _("Constant Bitrate (kbps):"));
 
     if (!is_rkmpp)
     {
         ghb_dict_set_bool(ud->settings, "vquality_type_cbr", FALSE);
         ghb_ui_update("vquality_type_cbr", ghb_boolean_value(FALSE));
         gtk_widget_set_sensitive(bitrate, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        gtk_widget_set_sensitive(bitrate_cbr, FALSE);
         gtk_widget_set_sensitive(placeholder, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        gtk_widget_set_sensitive(placeholder_cbr, FALSE);
         ghb_dict_set_string(ud->settings, "VideoRCMode", "");
         return;
     }
@@ -131,8 +139,10 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     ghb_ui_update("vquality_type_bitrate", ghb_boolean_value(vbr));
     ghb_ui_update("vquality_type_cbr", ghb_boolean_value(cbr));
 
-    gtk_widget_set_sensitive(bitrate, vbr || cbr);
-    gtk_widget_set_sensitive(placeholder, vbr || cbr);
+    gtk_widget_set_sensitive(bitrate, vbr);
+    gtk_widget_set_sensitive(bitrate_cbr, cbr);
+    gtk_widget_set_sensitive(placeholder, vbr);
+    gtk_widget_set_sensitive(placeholder_cbr, cbr);
 }
 
 void

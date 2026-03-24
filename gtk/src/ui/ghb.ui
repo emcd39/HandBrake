@@ -3622,6 +3622,32 @@ to limit instantaneous bitrate, look into x264&apos;s vbv-bufsize and vbv-maxrat
                                   </object>
                                 </child>
                                 <child>
+                                  <object class="GtkSpinButton" id="VideoAvgBitrateCBR">
+                                    <property name="visible">0</property>
+                                    <property name="focusable">1</property>
+                                    <property name="tooltip-text" translatable="yes">Set a constant bitrate target for RKMPP encoding.</property>
+                                    <property name="adjustment">adjustment3</property>
+                                    <property name="sensitive">0</property>
+                                    <signal name="value-changed" handler="rkmpp_cbr_bitrate_changed_cb" swapped="no"/>
+                                    <layout>
+                                      <property name="row">3</property>
+                                      <property name="column">1</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="placeholder_label_cbr">
+                                    <property name="visible">0</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="accessible-role">none</property>
+                                    <layout>
+                                      <property name="row">3</property>
+                                      <property name="column">2</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="GtkBox" id="VideoMultiPassBox">
                                     <property name="spacing">20</property>
                                     <child>

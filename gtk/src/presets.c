@@ -1835,13 +1835,14 @@ ghb_settings_to_preset(GhbValue *settings)
 {
     GhbValue *preset = ghb_value_dup(settings);
 
-    gboolean br, constant;
+    gboolean br, constant, cbr;
 
     ghb_dict_remove(preset, "title");
     ghb_dict_set_bool(preset, "Default", 0);
 
     br = ghb_dict_get_bool(preset, "vquality_type_bitrate");
     constant = ghb_dict_get_bool(preset, "vquality_type_constant");
+    cbr = ghb_dict_get_bool(preset, "vquality_type_cbr");
 
     const char * angle    = ghb_dict_get_string(preset, "rotate");
     int          hflip    = ghb_dict_get_int(preset, "hflip");
@@ -1877,7 +1878,7 @@ ghb_settings_to_preset(GhbValue *settings)
 
     // VideoQualityType/0/1/2 - vquality_type_/target/bitrate/constant
     // *note: target is no longer used
-    if (br)
+    if (br || cbr)
     {
         ghb_dict_set_int(preset, "VideoQualityType", 1);
     }

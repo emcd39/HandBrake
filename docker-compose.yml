@@ -10,12 +10,15 @@ services:
 
     environment:
       TZ: Asia/Shanghai
-      USER_ID: "0"
-      GROUP_ID: "0"
+      LANG: zh_CN.UTF-8
+      LANGUAGE: zh_CN:zh
+      LC_ALL: zh_CN.UTF-8
       KEEP_APP_RUNNING: "1"
       CLEAN_TMP_DIR: "1"
       UMASK: "002"
       TAKE_CONFIG_OWNERSHIP: "1"
+      USER_ID: "0"
+      GROUP_ID: "0"
 
     volumes:
       - ./config:/config
@@ -23,15 +26,11 @@ services:
       - ./watch:/watch
       - ./output:/output
       - /lib/modules:/lib/modules:ro
-      - /sys/firmware:/sys/firmware:ro
 
     devices:
       - /dev/dri:/dev/dri
       - /dev/mpp_service:/dev/mpp_service
       - /dev/rga:/dev/rga
       - /dev/dma_heap:/dev/dma_heap
-      - /dev/mali0:/dev/mali0
 
-    pid: host
-    shm_size: "1gb"
     privileged: true

@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         fonts-cantarell \
+        fonts-wqy-microhei \
+        fonts-wqy-zenhei \
         git \
         gstreamer1.0-libav \
         gstreamer1.0-plugins-base \

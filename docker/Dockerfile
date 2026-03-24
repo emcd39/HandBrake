@@ -63,6 +63,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libx264-dev \
         libx265-dev \
         libxml2-dev \
+        locales \
         lsscsi \
         m4 \
         meson \
@@ -75,6 +76,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge -y --auto-remove software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
+RUN sed -i 's/^# *zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen zh_CN.UTF-8
+
 RUN APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \
     install_app_icon.sh "${APP_ICON_URL}"
 
@@ -82,6 +86,7 @@ COPY docker/start.sh /startapp.sh
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/bin/ghb /usr/local/bin/ghb
 COPY artifacts/handbrake-cli-rkmpp-arm64/bundle/bin/HandBrakeCLI /usr/local/bin/HandBrakeCLI
 COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/lib/ /usr/local/lib/
+COPY artifacts/handbrake-gtk-rkmpp-arm64/bundle/share/ /usr/local/share/
 
 RUN chmod 0755 /startapp.sh /usr/local/bin/ghb /usr/local/bin/HandBrakeCLI && \
     set-cont-env APP_NAME "HandBrake" && \
@@ -92,7 +97,8 @@ RUN chmod 0755 /startapp.sh /usr/local/bin/ghb /usr/local/bin/HandBrakeCLI && \
 
 ENV HANDBRAKE_DEBUG=0 \
     HANDBRAKE_GUI=1 \
-    LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH} \
+    TEXTDOMAINDIR=/usr/local/share/locale
 
 VOLUME ["/storage"]
 VOLUME ["/output"]

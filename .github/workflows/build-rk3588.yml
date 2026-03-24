@@ -305,7 +305,7 @@ jobs:
 
       - name: Prepare GTK runtime bundle
         run: |
-          mkdir -p bundle/bin bundle/lib
+          mkdir -p bundle/bin bundle/lib bundle/share
           GHB_PATH=""
           for candidate in build/gtk/src/ghb build/gtk/ghb; do
             if [ -f "$candidate" ]; then
@@ -327,22 +327,30 @@ jobs:
           cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libdrm.so* bundle/lib/ 2>/dev/null || true
+          LOCALE_SRC=$(find build -type f -path '*/LC_MESSAGES/ghb.mo' | head -n 1)
+          if [ -n "$LOCALE_SRC" ]; then
+            LOCALE_ROOT=$(printf '%s\n' "$LOCALE_SRC" | sed 's#/LC_MESSAGES/ghb.mo$##' | sed 's#/[^/]*$##')
+            mkdir -p bundle/share/locale
+            cp -a "$LOCALE_ROOT"/. bundle/share/locale/
+          fi
           ldd bundle/bin/ghb || true
 
       - name: Build GTK Debian package
         run: |
           PKGROOT="$PWD/pkg-gtk"
           rm -rf "$PKGROOT" handbrake-gtk-rkmpp-arm64.deb
-          mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/opt/handbrake-rk3588/bin" "$PKGROOT/opt/handbrake-rk3588/lib" "$PKGROOT/usr/bin"
+          mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/opt/handbrake-rk3588/bin" "$PKGROOT/opt/handbrake-rk3588/lib" "$PKGROOT/opt/handbrake-rk3588/share" "$PKGROOT/usr/bin"
           cp bundle/bin/ghb "$PKGROOT/opt/handbrake-rk3588/bin/"
           cp bundle/bin/HandBrakeCLI "$PKGROOT/opt/handbrake-rk3588/bin/" 2>/dev/null || true
           cp bundle/lib/* "$PKGROOT/opt/handbrake-rk3588/lib/" 2>/dev/null || true
+          cp -a bundle/share/. "$PKGROOT/opt/handbrake-rk3588/share/" 2>/dev/null || true
           cat > "$PKGROOT/usr/bin/ghb-rk3588" << 'EOF'
           #!/bin/sh
           export GTK_THEME=${GTK_THEME:-Adwaita}
           unset GTK_RC_FILES
           unset GTK2_RC_FILES
           export LD_LIBRARY_PATH=/opt/handbrake-rk3588/lib:${LD_LIBRARY_PATH}
+          export TEXTDOMAINDIR=/opt/handbrake-rk3588/share/locale
           exec /opt/handbrake-rk3588/bin/ghb "$@"
           EOF
           cat > "$PKGROOT/usr/bin/ghb" << 'EOF'

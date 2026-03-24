@@ -289,6 +289,7 @@ jobs:
 
       - name: Build HandBrake GTK
         run: |
+          set -o pipefail
           cd build
           make -j$(nproc) gtk.build 2>&1 | tee build.log
           echo "=== Build log tail ==="

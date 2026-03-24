@@ -86,6 +86,8 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     GtkWidget *bitrate_cbr = ghb_builder_widget("VideoAvgBitrateCBR");
     GtkWidget *placeholder = ghb_builder_widget("placeholder_label");
     GtkWidget *placeholder_cbr = ghb_builder_widget("placeholder_label_cbr");
+    gboolean quality_supported = hb_video_quality_is_supported(encoder);
+    gboolean bitrate_supported = hb_video_bitrate_is_supported(encoder);
 
     gtk_widget_set_visible(cbr_button, is_rkmpp);
     gtk_widget_set_visible(bitrate_cbr, is_rkmpp);
@@ -97,6 +99,9 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
                                         : _("Bitrate (kbps):    "));
     gtk_check_button_set_label(GTK_CHECK_BUTTON(cbr_button),
                                _("Constant Bitrate (kbps):"));
+    gtk_widget_set_sensitive(cqp_button, is_rkmpp || quality_supported);
+    gtk_widget_set_sensitive(vbr_button, bitrate_supported);
+    gtk_widget_set_sensitive(cbr_button, is_rkmpp);
 
     if (!is_rkmpp)
     {
@@ -160,12 +165,22 @@ ghb_update_multipass(signal_user_data_t *ud)
     GtkWidget *multi_pass = ghb_builder_widget("VideoMultiPassBox");
     GtkWidget *turbo_multi_pass = ghb_builder_widget("VideoTurboMultiPass");
     int encoder = ghb_get_video_encoder(ud->settings);
-    
+    gboolean is_rkmpp = video_encoder_is_rkmpp_rate_control(encoder);
+
     gboolean constant_quality = ghb_dict_get_bool(ud->settings, "vquality_type_constant");
     gboolean supports_multi_pass = hb_video_multipass_is_supported(encoder, constant_quality);
     gboolean turbo_supported = (encoder & HB_VCODEC_X264_MASK) || (encoder & HB_VCODEC_X265_MASK);
-    
-    gtk_widget_set_sensitive(multi_pass, supports_multi_pass);
+
+    if (is_rkmpp)
+    {
+        ghb_dict_set_bool(ud->settings, "VideoMultiPass", FALSE);
+        ghb_dict_set_bool(ud->settings, "VideoTurboMultiPass", FALSE);
+        ghb_ui_update("VideoMultiPass", ghb_boolean_value(FALSE));
+        ghb_ui_update("VideoTurboMultiPass", ghb_boolean_value(FALSE));
+    }
+
+    gtk_widget_set_visible(multi_pass, !is_rkmpp);
+    gtk_widget_set_sensitive(multi_pass, !is_rkmpp && supports_multi_pass);
     gtk_widget_set_visible(turbo_multi_pass, turbo_supported);
 }
 
@@ -238,18 +253,25 @@ vcodec_changed_cb (GtkWidget *widget, gpointer data)
     // update quality type
     GtkWidget *cqRadioButton = ghb_builder_widget("vquality_type_constant");
     GtkWidget *abrRadioButton = ghb_builder_widget("vquality_type_bitrate");
-    gtk_widget_set_sensitive(cqRadioButton, hb_video_quality_is_supported(encoder));
-    gtk_widget_set_sensitive(abrRadioButton, hb_video_bitrate_is_supported(encoder));
-    if (ghb_widget_boolean(cqRadioButton) && ! hb_video_quality_is_supported(encoder))
+    gboolean is_rkmpp = video_encoder_is_rkmpp_rate_control(encoder);
+    gboolean quality_supported = hb_video_quality_is_supported(encoder);
+    gboolean bitrate_supported = hb_video_bitrate_is_supported(encoder);
+    gtk_widget_set_sensitive(cqRadioButton, is_rkmpp || quality_supported);
+    gtk_widget_set_sensitive(abrRadioButton, bitrate_supported);
+    if (!is_rkmpp)
     {
-        ghb_update_widget(abrRadioButton, ghb_boolean_value(true));
-    }
-    if (ghb_widget_boolean(abrRadioButton) && ! hb_video_bitrate_is_supported(encoder))
-    {
-        ghb_update_widget(cqRadioButton, ghb_boolean_value(true));
+        if (ghb_widget_boolean(cqRadioButton) && !quality_supported)
+        {
+            ghb_update_widget(abrRadioButton, ghb_boolean_value(true));
+        }
+        if (ghb_widget_boolean(abrRadioButton) && !bitrate_supported)
+        {
+            ghb_update_widget(cqRadioButton, ghb_boolean_value(true));
+        }
     }
 
     ghb_update_rkmpp_rate_control(ud);
+    ghb_update_multipass(ud);
 
     if (ghb_check_name_template(ud, "{bit-depth}") ||
         ghb_check_name_template(ud, "{codec}"))

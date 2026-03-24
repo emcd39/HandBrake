@@ -1,210 +1,157 @@
-# HandBrake RK3588 (ARM64) Build Guide
+# RK3588 构建与使用指南
 
-## 概述
+本文档描述当前仓库实际采用的 RK3588 构建、发布和 Docker 使用方式。
 
-本文档介绍如何将 HandBrake 移植到 RK3588 Debian 系统，启用 GTK 图形界面（用于 novnc）。
+## 1. 产物类型
 
-**注意**: GTK 版本需要使用 contrib 中自带的 FFmpeg 进行构建，不能使用 jellyfin-ffmpeg7。
+`build-rk3588.yml` 会产出两类 ARM64 产物：
 
-## 环境要求
+- CLI bundle
+  - `HandBrakeCLI`
+  - 运行时动态库
+  - `.deb`
+- GTK bundle
+  - `ghb`
+  - `HandBrakeCLI`
+  - 运行时动态库
+  - `share/locale` 翻译资源
+  - `.deb`
 
-### 主机系统 (x86_64 Linux)
-- GCC/G++ 交叉编译工具链
-- pkg-config
-- Python 3.x
-- 构建工具 (make, meson, nasm 等)
+成功后会发布一个 `rk3588-<sha7>` 的 GitHub prerelease，供 Docker workflow 复用。
 
-### 安装交叉编译工具链
-```bash
-sudo apt update
-sudo apt install \
-gcc-aarch64-linux-gnu \
-g++-aarch64-linux-gnu \
-pkg-config \
-build-essential \
-nasm \
-meson \
-ninja-build \
-python3 \
-python3-pip
-```
+## 2. GitHub Actions 工作流
 
-### 安装 GTK 交叉编译依赖
-```bash
-sudo apt install \
-libgtk-4-dev-arm64-cross \
-libadwaita-1-dev-arm64-cross \
-libglib2.0-dev-arm64-cross \
-libgstreamer1.0-dev-arm64-cross \
-libgstreamer-plugins-base1.0-dev-arm64-cross \
-libwebkit2gtk-4.1-dev-arm64-cross \
-libnotify-dev-arm64-cross \
-libmpv-dev-arm64-cross \
-libdvdnav-dev-arm64-cross \
-libdvdread-dev-arm64-cross \
-libbluray-dev-arm64-cross \
-libass-dev-arm64-cross \
-libfreetype6-dev-arm64-cross \
-libfribidi-dev-arm64-cross \
-libharfbuzz-dev-arm64-cross \
-libcairo2-dev-arm64-cross \
-libpango1.0-dev-arm64-cross \
-libatk1.0-dev-arm64-cross \
-libatk-bridge2.0-dev-arm64-cross \
-libxkbcommon-dev-arm64-cross \
-libx11-dev-arm64-cross \
-libxext-dev-arm64-cross \
-libxrandr-dev-arm64-cross \
-libxdamage-dev-arm64-cross \
-libxcomposite-dev-arm64-cross \
-libgbm-dev-arm64-cross \
-libasound2-dev-arm64-cross \
-libturbojpeg0-dev-arm64-cross \
-libogg-dev-arm64-cross \
-libvorbis-dev-arm64-cross \
-libtheora-dev-arm64-cross \
-libsvtav1-dev-arm64-cross \
-libxml2-dev-arm64-cross \
-libdrm-dev-arm64-cross
-```
+### `build-rk3588.yml`
 
-### 目标系统 (RK3588)
-- Debian (推荐 Debian 12 Bookworm ARM64)
-- novnc (Docker 中运行)
+作用：
 
-## 构建步骤
+- 在 `ubuntu-24.04-arm` runner 上构建 CLI 和 GTK ARM64 版本
+- 拉取并安装 RKMPP / RKRGA 依赖
+- 打包 bundle 与 `.deb`
+- 发布 `rk3588-*` prerelease
 
-### 步骤 1: 安装依赖
+当前产物消费方式：
 
-安装所有必要的构建工具和交叉编译库:
-```bash
-sudo apt update
-sudo apt install \
-gcc-aarch64-linux-gnu g++-aarch64-linux-gnu pkg-config \
-build-essential nasm meson ninja-build python3 \
-libgtk-4-dev-arm64-cross libadwaita-1-dev-arm64-cross \
-libglib2.0-dev-arm64-cross libgstreamer1.0-dev-arm64-cross \
-libgstreamer-plugins-base1.0-dev-arm64-cross \
-libwebkit2gtk-4.1-dev-arm64-cross libnotify-dev-arm64-cross \
-libmpv-dev-arm64-cross libdvdnav-dev-arm64-cross \
-libdvdread-dev-arm64-cross libbluray-dev-arm64-cross \
-libass-dev-arm64-cross libfreetype6-dev-arm64-cross \
-libfribidi-dev-arm64-cross libharfbuzz-dev-arm64-cross \
-libcairo2-dev-arm64-cross libpango1.0-dev-arm64-cross
-```
+- Docker 不再依赖短期过期的 Actions artifact
+- Docker workflow 直接从 prerelease 下载 `bundle.tar.gz`
 
-### 步骤 2: 配置 HandBrake (启用 GTK)
+### `docker-build.yml`
 
-创建构建目录并配置:
-```bash
-mkdir -p build/rk3588
-cd build/rk3588
-../../configure \
---cross=aarch64-linux-gnu \
---build=x86_64-linux-gnu \
---prefix=/usr/local \
---enable-gtk \
---disable-gtk-update-checks \
---enable-x265
-```
+作用：
 
-### 步骤 3: 编译
+- 下载指定 `rk3588-*` release 的 CLI / GTK bundle
+- 构建 `linux/arm64` Docker 镜像
+- 按条件推送到 GHCR
+
+默认行为：
+
+- 被 `build-rk3588.yml` 成功触发时，会自动取对应 `rk3588-<sha7>` release
+- 手动触发时，如果未指定 `source_tag`，会默认使用最新的 `rk3588-*` prerelease
+
+## 3. 本地 Docker 使用
+
+当前验证可用的最小 compose 思路如下：
+
+- `privileged: true`
+- 映射：
+  - `/dev/dri`
+  - `/dev/mpp_service`
+  - `/dev/rga`
+  - `/dev/dma_heap`
+- 挂载：
+  - `/config`
+  - `/storage`
+  - `/watch`
+  - `/output`
+  - `/lib/modules`
+
+仓库内示例见 [docker-compose.yml](/E:/projects/HandBrake/docker-compose.yml)。
+
+### 推荐环境变量
+
+当前 compose 已包含：
+
+- `TZ=Asia/Shanghai`
+- `LANG=zh_CN.UTF-8`
+- `LANGUAGE=zh_CN:zh`
+- `LC_ALL=zh_CN.UTF-8`
+- `USER_ID=0`
+- `GROUP_ID=0`
+
+### 启动
 
 ```bash
-make -j$(nproc)
+docker compose up -d
 ```
 
-### 步骤 4: 部署到 RK3588 Docker
+### 镜像标签
 
-编译完成后，将以下文件传输到 RK3588:
-- `build/rk3588/build/HandBrake` (主程序)
-- `deps/jellyfin-ffmpeg7/usr/lib/aarch64-linux-gnu/*` (FFmpeg 库)
+常见可用方式：
 
-## Web UI Docker 部署
+- `ghcr.io/emcd39/handbrake-rk3588:latest`
+- `ghcr.io/emcd39/handbrake-rk3588:sha-<sha7>`
 
-我们提供两种方案，推荐使用 Web UI 而不是 GTK+novnc（更节省资源）。
+如果你使用镜像代理，也可以替换为对应代理前缀。
 
-### 方案 1: Flask Web UI (推荐)
+## 4. 本地运行检查
 
-HandBrake Web UI 是一个轻量级的 Web 界面，调用 HandBrakeCLI 进行转码。
-
-#### 1.1 安装 Python 依赖
+容器启动后，可以先检查 locale 和配置目录：
 
 ```bash
-pip install -r webui/requirements.txt
+docker exec -it handbrake-rk3588 sh -lc 'locale -a | grep -i zh'
+docker exec -it handbrake-rk3588 sh -lc 'ls /config/xdg/config/ghb'
 ```
 
-#### 1.2 创建 Dockerfile
+GUI 偏好设置实际保存在：
 
-```dockerfile
-FROM debian:bookworm-slim
-
-RUN apt update && apt install -y \
-python3 \
-python3-pip \
-curl \
-&& rm -rf /var/lib/apt/lists/*
-
-COPY handbrake /usr/local/bin/
-COPY ffmpeg/lib /usr/lib/aarch64-linux-gnu/
-COPY webui /opt/handbrake-web/
-
-RUN chmod +x /usr/local/bin/HandBrakeCLI
-
-ENV LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH
-ENV PATH=/opt/handbrake-web:$PATH
-
-WORKDIR /opt/handbrake-web
-
-EXPOSE 5000
-
-CMD ["python3", "app.py"]
+```text
+/config/xdg/config/ghb/preferences.json
 ```
 
-#### 1.3 访问
+## 5. CLI 自检
 
-启动后访问 `http://<ip>:5000`
+进入容器后可以用 CLI 验证编码器是否可见：
 
-### 方案 2: novnc (已不推荐)
-
-如果仍需 novnc 方案，请参考上一版本文档。
-
-## 使用构建脚本
-
-也可以使用自动构建脚本:
 ```bash
-chmod +x build_rk3588.sh
-./build_rk3588.sh
+docker exec -it handbrake-rk3588 sh -lc 'HandBrakeCLI --help | grep rkmpp'
 ```
 
-## 注意事项
+最小转码示例：
 
-1. HandBrake 默认会从源码构建 FFmpeg，本配置使用 jellyfin-ffmpeg7 替代
-2. jellyfin-ffmpeg7 基于 FFmpeg 7.x，与 HandBrake 的 FFmpeg 8.0.1 接口兼容
-3. 启用 GTK 需要更多依赖，包括 gstreamer、webkit2gtk 等
-4. novnc 需要 x11vnc 和 Xvfb 来提供虚拟显示
-5. **重要**: GTK 4 是必需的，GTK 3 不支持
+```bash
+docker exec -it handbrake-rk3588 sh -lc 'HandBrakeCLI -i /storage/input.mp4 -o /storage/out.mp4 -e h264_rkmpp -b 2000'
+```
 
-## 故障排除
+## 6. 镜像构建说明
 
-### 问题：configure 找不到 FFmpeg 库
-解决：确认 PKG_CONFIG_PATH 设置正确
+Docker 镜像不是直接从源码构建 `ghb`，而是：
 
-### 问题：GTK 依赖缺失
-解决：安装完整的 GTK 交叉编译依赖包，确保包含 `libgtk-4-dev-arm64-cross` 和 `libadwaita-1-dev-arm64-cross`
+1. `build-rk3588.yml` 先生成 GTK / CLI bundle
+2. `docker-build.yml` 下载 bundle
+3. [docker/Dockerfile](/E:/projects/HandBrake/docker/Dockerfile) 将 bundle 中的内容复制进运行镜像
 
-### 问题：链接错误
-解决：检查 jellyfin-ffmpeg7 是否完整提取
+当前 Dockerfile 额外做了这些运行时准备：
 
-### 问题：交叉编译失败
-解决：确认 aarch64-linux-gnu 工具链正确安装
+- 安装中文字体
+- 生成 `zh_CN.UTF-8` locale
+- 复制 `share/locale`
+- 设置 `TEXTDOMAINDIR=/usr/local/share/locale`
 
-### 问题：novnc 无法显示
-解决：检查 Xvfb 和 x11vnc 是否正确启动
+## 7. 已知注意事项
 
-## 文件说明
+- RK3588 Docker 运行是否成功，核心不在“镜像是否能启动”，而在宿主机设备节点是否完整。
+- GUI 切换中文除了写入 `UiLanguage`，还依赖：
+  - locale 已生成
+  - `ghb.mo` 已包含在镜像内
+- 某些 RKMPP 行为会受容器运行环境影响，尤其是不同 GUI 基座、设备权限和宿主机驱动状态。
 
-- `make/cross/aarch64-linux-gnu.meson` - Meson 交叉编译配置
-- `extract_ffmpeg.sh` - FFmpeg 包提取脚本
-- `build_rk3588.sh` - 自动构建脚本
-- `deps/jellyfin-ffmpeg7/` - FFmpeg 库提取目录
+## 8. 不再推荐的旧路线
+
+以下内容已经不再是当前主路径：
+
+- 旧的 `webui/` Flask 方案
+- `extract_ffmpeg.sh`
+- 基于 `jellyfin-ffmpeg7` 的旧文档路线
+- 过时的交叉编译说明
+
+如需更新文档，请以 workflow 和 Dockerfile 的现状为准，不要回写这些旧方案。

@@ -370,6 +370,28 @@ ghb_preset_to_settings(GhbValue *settings, GhbValue *preset)
     } break;
     }
 
+    ghb_dict_set_bool(settings, "vquality_type_cbr", FALSE);
+    const gchar *video_rc_mode = ghb_dict_get_string(settings, "VideoRCMode");
+    if (video_rc_mode != NULL && video_rc_mode[0] != 0)
+    {
+        if (!strcasecmp(video_rc_mode, "cqp"))
+        {
+            ghb_dict_set_bool(settings, "vquality_type_constant", TRUE);
+            ghb_dict_set_bool(settings, "vquality_type_bitrate", FALSE);
+        }
+        else if (!strcasecmp(video_rc_mode, "cbr"))
+        {
+            ghb_dict_set_bool(settings, "vquality_type_constant", FALSE);
+            ghb_dict_set_bool(settings, "vquality_type_bitrate", FALSE);
+            ghb_dict_set_bool(settings, "vquality_type_cbr", TRUE);
+        }
+        else if (!strcasecmp(video_rc_mode, "vbr"))
+        {
+            ghb_dict_set_bool(settings, "vquality_type_constant", FALSE);
+            ghb_dict_set_bool(settings, "vquality_type_bitrate", TRUE);
+        }
+    }
+
     const gchar *mode = ghb_dict_get_string(settings, "VideoFramerateMode");
     if (mode != NULL && strcmp(mode, "cfr") == 0)
     {

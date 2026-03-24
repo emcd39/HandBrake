@@ -64,6 +64,77 @@ int ghb_set_video_preset(GhbValue *settings, int encoder, const char * preset)
     return result;
 }
 
+static gboolean
+video_encoder_is_rkmpp_rate_control(int encoder)
+{
+    return encoder == HB_VCODEC_FFMPEG_RKMPP_H264 ||
+           encoder == HB_VCODEC_FFMPEG_RKMPP_H265;
+}
+
+void
+ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
+{
+    int encoder = ghb_get_video_encoder(ud->settings);
+    gboolean is_rkmpp = video_encoder_is_rkmpp_rate_control(encoder);
+    const char *mode = ghb_dict_get_string(ud->settings, "VideoRCMode");
+    gboolean cqp, vbr, cbr;
+
+    GtkWidget *cqp_button = ghb_builder_widget("vquality_type_constant");
+    GtkWidget *vbr_button = ghb_builder_widget("vquality_type_bitrate");
+    GtkWidget *cbr_button = ghb_builder_widget("vquality_type_cbr");
+    GtkWidget *bitrate = ghb_builder_widget("VideoAvgBitrate");
+    GtkWidget *placeholder = ghb_builder_widget("placeholder_label");
+
+    gtk_widget_set_visible(cbr_button, is_rkmpp);
+    gtk_check_button_set_label(GTK_CHECK_BUTTON(cqp_button),
+                               _("Constant Quality:"));
+    gtk_check_button_set_label(GTK_CHECK_BUTTON(vbr_button),
+                               is_rkmpp ? _("Variable Bitrate (kbps):")
+                                        : _("Bitrate (kbps):    "));
+
+    if (!is_rkmpp)
+    {
+        ghb_dict_set_bool(ud->settings, "vquality_type_cbr", FALSE);
+        ghb_ui_update("vquality_type_cbr", ghb_boolean_value(FALSE));
+        gtk_widget_set_sensitive(bitrate, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        gtk_widget_set_sensitive(placeholder, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        ghb_dict_set_string(ud->settings, "VideoRCMode", "");
+        return;
+    }
+
+    if (mode == NULL || mode[0] == 0 || !strcasecmp(mode, "auto"))
+    {
+        if (ghb_dict_get_bool(ud->settings, "vquality_type_constant"))
+        {
+            mode = "cqp";
+        }
+        else if (ghb_dict_get_bool(ud->settings, "vquality_type_cbr"))
+        {
+            mode = "cbr";
+        }
+        else
+        {
+            mode = "vbr";
+        }
+        ghb_dict_set_string(ud->settings, "VideoRCMode", mode);
+    }
+
+    cqp = !strcasecmp(mode, "cqp");
+    cbr = !strcasecmp(mode, "cbr");
+    vbr = !cqp && !cbr;
+
+    ghb_dict_set_bool(ud->settings, "vquality_type_constant", cqp);
+    ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", vbr);
+    ghb_dict_set_bool(ud->settings, "vquality_type_cbr", cbr);
+
+    ghb_ui_update("vquality_type_constant", ghb_boolean_value(cqp));
+    ghb_ui_update("vquality_type_bitrate", ghb_boolean_value(vbr));
+    ghb_ui_update("vquality_type_cbr", ghb_boolean_value(cbr));
+
+    gtk_widget_set_sensitive(bitrate, vbr || cbr);
+    gtk_widget_set_sensitive(placeholder, vbr || cbr);
+}
+
 void
 ghb_update_multipass(signal_user_data_t *ud)
 {
@@ -102,11 +173,9 @@ vcodec_changed_cb (GtkWidget *widget, gpointer data)
     ghb_update_ui_combo_box(ud, "VideoTune", NULL, FALSE);
     ghb_update_ui_combo_box(ud, "VideoProfile", NULL, FALSE);
     ghb_update_ui_combo_box(ud, "VideoLevel", NULL, FALSE);
-    ghb_update_ui_combo_box(ud, "VideoRCMode", NULL, FALSE);
     ghb_ui_update("VideoTune", ghb_int_value(0));
     ghb_ui_update("VideoProfile", ghb_int_value(0));
     ghb_ui_update("VideoLevel", ghb_int_value(0));
-    ghb_ui_update("VideoRCMode", ghb_int_value(0));
     ghb_ui_update("VideoOptionExtra", ghb_string_value(""));
 
     // Set the range of the preset slider
@@ -122,10 +191,6 @@ vcodec_changed_cb (GtkWidget *widget, gpointer data)
     if (hb_video_encoder_get_levels(encoder) == NULL)
     {
         ghb_dict_set_string(ud->settings, "VideoLevel", "");
-    }
-    if (hb_video_encoder_get_rate_controls(encoder) == NULL)
-    {
-        ghb_dict_set_string(ud->settings, "VideoRCMode", "");
     }
 
     GtkWidget *presetSlider = ghb_builder_widget("VideoPresetSlider");
@@ -164,6 +229,8 @@ vcodec_changed_cb (GtkWidget *widget, gpointer data)
     {
         ghb_update_widget(cqRadioButton, ghb_boolean_value(true));
     }
+
+    ghb_update_rkmpp_rate_control(ud);
 
     if (ghb_check_name_template(ud, "{bit-depth}") ||
         ghb_check_name_template(ud, "{codec}"))

@@ -423,8 +423,7 @@ static GhbBinding widget_bindings[] =
     {"PictureDetelecine", "active-id", "custom10", "PictureDetelecineCustom", "visible"},
     {"PictureColorspacePreset", "active-id", "custom11", "PictureColorspaceCustom", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit", "x264FastDecode", "visible"},
-    {"VideoEncoder", "active-id", "h264_rkmpp|h265_rkmpp", "VideoRCMode", "visible"},
-    {"VideoEncoder", "active-id", "h264_rkmpp|h265_rkmpp", "VideoRCModeLabel", "visible"},
+    {"VideoEncoder", "active-id", "h264_rkmpp|h265_rkmpp", "vquality_type_cbr", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit|x265|x265_10bit|x265_12bit|x265_16bit|mpeg4|mpeg2|VP8|VP9|VP9_10bit|qsv_av1|qsv_av1_10bit|qsv_h264|qsv_h265|qsv_h265_10bit|h264_rkmpp|h265_rkmpp|mjpeg_rkmpp", "VideoOptionExtraWindow", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit|x265|x265_10bit|x265_12bit|x265_16bit|mpeg4|mpeg2|VP8|VP9|VP9_10bit|qsv_av1|qsv_av1_10bit|qsv_h264|qsv_h265|qsv_h265_10bit|h264_rkmpp|h265_rkmpp|mjpeg_rkmpp", "VideoOptionExtraLabel", "visible"},
     {"auto_name", "active", NULL, "autoname_box", "sensitive"},
@@ -3271,8 +3270,30 @@ G_MODULE_EXPORT void
 vquality_type_changed_cb (GtkWidget *widget, gpointer data)
 {
     signal_user_data_t *ud = ghb_ud();
+    int encoder = ghb_get_video_encoder(ud->settings);
 
     ghb_widget_to_setting(ud->settings, widget);
+    if (encoder == HB_VCODEC_FFMPEG_RKMPP_H264 ||
+        encoder == HB_VCODEC_FFMPEG_RKMPP_H265)
+    {
+        const char *name = gtk_widget_get_name(widget);
+        if (gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)))
+        {
+            if (!strcmp(name, "vquality_type_constant"))
+            {
+                ghb_dict_set_string(ud->settings, "VideoRCMode", "cqp");
+            }
+            else if (!strcmp(name, "vquality_type_cbr"))
+            {
+                ghb_dict_set_string(ud->settings, "VideoRCMode", "cbr");
+            }
+            else
+            {
+                ghb_dict_set_string(ud->settings, "VideoRCMode", "vbr");
+            }
+        }
+        ghb_update_rkmpp_rate_control(ud);
+    }
     ghb_update_multipass(ud);
     ghb_clear_presets_selection(ud);
     ghb_live_reset(ud);

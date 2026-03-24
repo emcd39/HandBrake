@@ -29,5 +29,6 @@ int ghb_get_video_encoder(GhbValue *settings);
 void ghb_video_setting_changed(GtkWidget *widget, signal_user_data_t *ud);
 int ghb_set_video_preset(GhbValue *settings, int encoder, const char * preset);
 void ghb_update_multipass(signal_user_data_t *ud);
+void ghb_update_rkmpp_rate_control(signal_user_data_t *ud);
 
 G_END_DECLS

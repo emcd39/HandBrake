@@ -98,10 +98,6 @@ combo_opts_t audio_track_sel_opts =
     d_audio_track_sel_opts
 };
 
-static void
-video_rc_mode_opts_set(signal_user_data_t *ud, const gchar *name,
-                       void *opts, const void* data);
-
 static int
 ghb_rkmpp_hw_decode_for_encoder(int encoder)
 {
@@ -1001,12 +997,6 @@ combo_name_map_t combo_name_map[] =
         "VideoLevel",
         NULL,
         video_level_opts_set,
-        NULL
-    },
-    {
-        "VideoRCMode",
-        NULL,
-        video_rc_mode_opts_set,
         NULL
     },
     {
@@ -2820,45 +2810,6 @@ video_level_opts_set(signal_user_data_t *ud, const gchar *name,
                            0, levels[ii],
                            1, TRUE,
                            2, levels[ii],
-                           3, (gdouble)ii,
-                           -1);
-    }
-}
-
-static void
-video_rc_mode_opts_set(signal_user_data_t *ud, const gchar *name,
-                       void *opts, const void* data)
-{
-    (void)opts;
-    (void)data;
-    GtkTreeIter iter;
-    GtkListStore *store;
-    gint ii, count = 0;
-
-    GhbValue *value = ghb_dict_get(ud->settings, "VideoEncoder");
-    if (value == NULL) return;
-
-    int encoder = ghb_get_video_encoder(ud->settings);
-    const char * const *rc_modes = hb_video_encoder_get_rate_controls(encoder);
-
-    while (rc_modes && rc_modes[count]) count++;
-    GtkWidget *w = ghb_builder_widget("VideoRCMode");
-    gtk_widget_set_visible(w, count > 0);
-    w = ghb_builder_widget("VideoRCModeLabel");
-    gtk_widget_set_visible(w, count > 0);
-    if (count == 0) return;
-
-    GtkComboBox *combo = GTK_COMBO_BOX(ghb_builder_widget(name));
-    store = GTK_LIST_STORE(gtk_combo_box_get_model(combo));
-    gtk_list_store_clear(store);
-
-    for (ii = 0; ii < count; ii++)
-    {
-        gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter,
-                           0, rc_modes[ii],
-                           1, TRUE,
-                           2, rc_modes[ii],
                            3, (gdouble)ii,
                            -1);
     }

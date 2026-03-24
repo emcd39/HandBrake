@@ -3272,16 +3272,18 @@ vquality_type_changed_cb (GtkWidget *widget, gpointer data)
     signal_user_data_t *ud = ghb_ud();
     int encoder = ghb_get_video_encoder(ud->settings);
     gboolean is_active = gtk_check_button_get_active(GTK_CHECK_BUTTON(widget));
+    gboolean is_rkmpp = encoder == HB_VCODEC_FFMPEG_RKMPP_H264 ||
+                        encoder == HB_VCODEC_FFMPEG_RKMPP_H265;
+
+    if (is_rkmpp && !is_active)
+    {
+        return;
+    }
 
     ghb_widget_to_setting(ud->settings, widget);
-    if (encoder == HB_VCODEC_FFMPEG_RKMPP_H264 ||
-        encoder == HB_VCODEC_FFMPEG_RKMPP_H265)
+    if (is_rkmpp)
     {
         const char *name = gtk_widget_get_name(widget);
-        if (!is_active)
-        {
-            return;
-        }
         if (!strcmp(name, "vquality_type_constant"))
         {
             ghb_dict_set_string(ud->settings, "VideoRCMode", "cqp");

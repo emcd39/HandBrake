@@ -79,9 +79,26 @@ jobs:
             SOURCE_TAG="rk3588-${SOURCE_SHA::7}"
           fi
 
-          if [[ -z "${SOURCE_TAG}" ]]; then
-            echo "Either source_tag or source_run_id must be provided for workflow_dispatch." >&2
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -z "${SOURCE_TAG}" && -z "${SOURCE_RUN_ID}" ]]; then
+            SOURCE_TAG="$(
+              gh release list \
+                --repo "${{ github.repository }}" \
+                --limit 20 \
+                --json tagName,isPrerelease,isDraft \
+                --jq '[.[] | select(.isPrerelease == true and .isDraft == false and (.tagName | startswith("rk3588-")))] | first | .tagName'
+            )"
+            if [[ -n "${SOURCE_TAG}" && "${SOURCE_TAG}" != "null" ]]; then
+              SOURCE_SHA="${SOURCE_TAG#rk3588-}"
+            fi
+          fi
+
+          if [[ -z "${SOURCE_TAG}" || "${SOURCE_TAG}" == "null" ]]; then
+            echo "Unable to determine source_tag for workflow_dispatch." >&2
             exit 1
+          fi
+
+          if [[ -z "${SOURCE_SHA}" || "${SOURCE_SHA}" == "null" ]]; then
+            SOURCE_SHA="${SOURCE_TAG#rk3588-}"
           fi
 
           DOCKER_IMAGE_VERSION="${SOURCE_SHA::7}"

@@ -100,13 +100,16 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
 
     if (!is_rkmpp)
     {
+        gboolean use_bitrate = ghb_dict_get_bool(ud->settings, "vquality_type_bitrate") ||
+                               ghb_dict_get_bool(ud->settings, "vquality_type_cbr");
         ghb_dict_set_bool(ud->settings, "vquality_type_cbr", FALSE);
+        ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", use_bitrate);
         ghb_ui_update("vquality_type_cbr", ghb_boolean_value(FALSE));
-        gtk_widget_set_sensitive(bitrate, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        ghb_ui_update("vquality_type_bitrate", ghb_boolean_value(use_bitrate));
+        gtk_widget_set_sensitive(bitrate, use_bitrate);
         gtk_widget_set_sensitive(bitrate_cbr, FALSE);
-        gtk_widget_set_sensitive(placeholder, ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"));
+        gtk_widget_set_sensitive(placeholder, use_bitrate);
         gtk_widget_set_sensitive(placeholder_cbr, FALSE);
-        ghb_dict_set_string(ud->settings, "VideoRCMode", "");
         return;
     }
 
@@ -130,6 +133,12 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     cqp = !strcasecmp(mode, "cqp");
     cbr = !strcasecmp(mode, "cbr");
     vbr = !cqp && !cbr;
+
+    GhbValue *bitrate_value = ghb_dict_get_value(ud->settings, "VideoAvgBitrate");
+    if (bitrate_value != NULL)
+    {
+        ghb_ui_update("VideoAvgBitrateCBR", bitrate_value);
+    }
 
     ghb_dict_set_bool(ud->settings, "vquality_type_constant", cqp);
     ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", vbr);

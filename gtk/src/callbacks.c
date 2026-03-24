@@ -3309,6 +3309,7 @@ rkmpp_cbr_bitrate_changed_cb (GtkWidget *widget, gpointer data)
     int bitrate = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 
     ghb_dict_set_int(ud->settings, "VideoAvgBitrate", bitrate);
+    ghb_ui_update("VideoAvgBitrate", ghb_int_value(bitrate));
     ghb_clear_presets_selection(ud);
     ghb_live_reset(ud);
     if (ghb_check_name_template(ud, "{bitrate}"))
@@ -3321,6 +3322,8 @@ vbitrate_changed_cb (GtkWidget *widget, gpointer data)
     signal_user_data_t *ud = ghb_ud();
 
     ghb_widget_to_setting(ud->settings, widget);
+    int bitrate = ghb_dict_get_int(ud->settings, "VideoAvgBitrate");
+    ghb_ui_update("VideoAvgBitrateCBR", ghb_int_value(bitrate));
     ghb_clear_presets_selection(ud);
     ghb_live_reset(ud);
     if (ghb_check_name_template(ud, "{bitrate}"))

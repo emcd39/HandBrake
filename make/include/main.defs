@@ -127,9 +127,9 @@ ifeq (1-darwin,$(FEATURE.xcode)-$(HOST.system))
     ## use macosx module when xcode+darwin
     MODULES += macosx
 else
-    ## default is to build CLI
-    ifneq ($(wildcard $(SRC/)test/module.rules),)
-        MODULES += test
+    ## default is to build CLI frontend
+    ifneq ($(wildcard $(SRC/)cli/module.rules),)
+        MODULES += cli
     endif
 endif
 

@@ -7,6 +7,7 @@ on:
       - '.github/workflows/build-rk3588.yml'
       - 'make/**'
       - 'gtk/**'
+      - 'cli/**'
       - 'libhb/**'
       - 'contrib/**'
       - 'configure'
@@ -135,13 +136,13 @@ jobs:
       - name: Build HandBrake CLI
         run: |
           cd build
-          make -j$(nproc)
+          make -j$(nproc) cli.build
 
       - name: Prepare CLI runtime bundle
         run: |
           mkdir -p bundle/bin bundle/lib
           CLI_PATH=""
-          for candidate in build/HandBrakeCLI build/test/HandBrakeCLI build/gtk/src/HandBrakeCLI; do
+          for candidate in build/HandBrakeCLI build/cli/HandBrakeCLI build/test/HandBrakeCLI build/gtk/src/HandBrakeCLI; do
             if [ -f "$candidate" ]; then
               CLI_PATH="$candidate"
               break
@@ -338,7 +339,7 @@ jobs:
             exit 1
           fi
           cp "$GHB_PATH" bundle/bin/ghb
-          cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || true
+          cp build/HandBrakeCLI bundle/bin/ 2>/dev/null || cp build/cli/HandBrakeCLI bundle/bin/ 2>/dev/null || true
           cp /usr/local/lib/librockchip_mpp.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/librga.so* bundle/lib/ 2>/dev/null || true
           cp /usr/local/lib/libmpp.so* bundle/lib/ 2>/dev/null || true

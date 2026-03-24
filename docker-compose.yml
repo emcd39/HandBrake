@@ -16,8 +16,6 @@ services:
       CLEAN_TMP_DIR: "1"
       UMASK: "002"
       TAKE_CONFIG_OWNERSHIP: "1"
-      LIBGL_ALWAYS_SOFTWARE: "1"
-      GSK_RENDERER: "cairo"
 
     volumes:
       - ./config:/config

@@ -850,6 +850,10 @@ hb_dict_t* hb_job_to_dict( const hb_job_t * job )
     {
         hb_dict_set(video_dict, "Level", hb_value_string(job->encoder_level));
     }
+    if (job->encoder_rc_mode != NULL)
+    {
+        hb_dict_set(video_dict, "RCMode", hb_value_string(job->encoder_rc_mode));
+    }
     if (job->encoder_options != NULL)
     {
         hb_dict_set(video_dict, "Options",
@@ -1156,6 +1160,7 @@ hb_job_t* hb_dict_to_job( hb_handle_t * h, hb_dict_t *dict )
     const char       * range_type = NULL;
     const char       * video_preset = NULL, * video_tune = NULL;
     const char       * video_profile = NULL, * video_level = NULL;
+    const char       * video_rc_mode = NULL;
     const char       * video_options = NULL;
     int                passthru_dynamic_hdr_metadata = -1;
     int                subtitle_search_burn = 0;
@@ -1178,7 +1183,7 @@ hb_job_t* hb_dict_to_job( hb_handle_t * h, hb_dict_t *dict )
     "s:{s?i, s?b, s?{s:s, s?I, s?I, s?I}},"
     // PAR {Num, Den}
     "s?{s:i, s:i},"
-    // Video {Codec, Quality, Bitrate, Preset, Tune, Profile, Level, Options
+    // Video {Codec, Quality, Bitrate, Preset, Tune, Profile, Level, RCMode, Options
     //       MultiPass, Turbo, PasshtruHDRDynamicMetadata
     //       ColorInputFormat, ColorOutputFormat, ColorRange,
     //       ColorPrimaries, ColorTransfer, ColorMatrix, ChromaLocation,
@@ -1187,7 +1192,7 @@ hb_job_t* hb_dict_to_job( hb_handle_t * h, hb_dict_t *dict )
     //       DolbyVisionConfigurationRecord
     //       ColorPrimariesOverride, ColorTransferOverride, ColorMatrixOverride,
     //       HardwareDecode, AdapterIndex, AsyncDepth
-    "s:{s:o, s?F, s?i, s?s, s?s, s?s, s?s, s?s,"
+    "s:{s:o, s?F, s?i, s?s, s?s, s?s, s?s, s?s, s?s,"
     "   s?b, s?b, s?i,"
     "   s?i, s?i, s?i,"
     "   s?i, s?i, s?i, s?i,"
@@ -1237,6 +1242,7 @@ hb_job_t* hb_dict_to_job( hb_handle_t * h, hb_dict_t *dict )
             "Tune",                 unpack_s(&video_tune),
             "Profile",              unpack_s(&video_profile),
             "Level",                unpack_s(&video_level),
+            "RCMode",               unpack_s(&video_rc_mode),
             "Options",              unpack_s(&video_options),
             "MultiPass",            unpack_b(&job->multipass),
             "Turbo",                unpack_b(&job->fastanalysispass),
@@ -1385,6 +1391,7 @@ hb_job_t* hb_dict_to_job( hb_handle_t * h, hb_dict_t *dict )
     hb_job_set_encoder_tune(job, video_tune);
     hb_job_set_encoder_profile(job, video_profile);
     hb_job_set_encoder_level(job, video_level);
+    hb_job_set_encoder_rc_mode(job, video_rc_mode);
     hb_job_set_encoder_options(job, video_options);
 
     // If both vbitrate and vquality were specified, vbitrate is used;

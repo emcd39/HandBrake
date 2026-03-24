@@ -157,6 +157,7 @@ void hb_job_set_encoder_tune   (hb_job_t *job, const char *tune);
 void hb_job_set_encoder_options(hb_job_t *job, const char *options);
 void hb_job_set_encoder_profile(hb_job_t *job, const char *profile);
 void hb_job_set_encoder_level  (hb_job_t *job, const char *level);
+void hb_job_set_encoder_rc_mode(hb_job_t *job, const char *rc_mode);
 void hb_job_set_file           (hb_job_t *job, const char *file);
 
 hb_audio_t *hb_audio_copy(const hb_audio_t *src);
@@ -533,6 +534,7 @@ const char* const* hb_video_encoder_get_presets (int encoder);
 const char* const* hb_video_encoder_get_tunes   (int encoder);
 const char* const* hb_video_encoder_get_profiles(int encoder);
 const char* const* hb_video_encoder_get_levels  (int encoder);
+const char* const* hb_video_encoder_get_rate_controls(int encoder);
 const int*         hb_video_encoder_get_pix_fmts(int encoder, const char *profile);
 
 void  hb_audio_quality_get_limits(uint32_t codec, float *low, float *high, float *granularity, int *direction);
@@ -773,6 +775,7 @@ struct hb_job_s
     char           *encoder_options;
     char           *encoder_profile;
     char           *encoder_level;
+    char           *encoder_rc_mode;
     int             areBframes;
 
     // Pixel format from decoder to the end of the filters chain

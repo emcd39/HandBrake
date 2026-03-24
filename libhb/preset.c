@@ -2050,6 +2050,8 @@ int hb_preset_apply_video(const hb_dict_t *preset, hb_dict_t *job_dict)
             hb_dict_set(video_dict, "Profile", hb_value_dup(value));
         if ((value = hb_dict_get(preset, "VideoLevel")) != NULL)
             hb_dict_set(video_dict, "Level", hb_value_dup(value));
+        if ((value = hb_dict_get(preset, "VideoRCMode")) != NULL)
+            hb_dict_set(video_dict, "RCMode", hb_value_dup(value));
         if ((value = hb_dict_get(preset, "VideoTune")) != NULL)
             hb_dict_set(video_dict, "Tune", hb_value_dup(value));
         if ((value = hb_dict_get(preset, "VideoOptionExtra")) != NULL)

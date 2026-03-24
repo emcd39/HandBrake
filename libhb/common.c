@@ -2015,8 +2015,45 @@ static const char * const hb_empty_list_names[] =
     "auto", NULL
 };
 
+static const char * const hb_rkmpp_h264_profile_names[] =
+{
+    "auto", "baseline", "main", "high", NULL
+};
+
+static const char * const hb_rkmpp_h265_profile_names[] =
+{
+    "auto", "main", NULL
+};
+
+static const char * const hb_rkmpp_rc_mode_names[] =
+{
+    "auto", "vbr", "cbr", "cqp", NULL
+};
+
+const char* const* hb_video_encoder_get_rate_controls(int encoder)
+{
+    switch (encoder)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+            return hb_rkmpp_rc_mode_names;
+        default:
+            return NULL;
+    }
+}
+
 const char* const* hb_video_encoder_get_presets(int encoder)
 {
+    switch (encoder)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return NULL;
+        default:
+            break;
+    }
+
     if (encoder & HB_VCODEC_FFMPEG_MASK)
     {
         return hb_av_preset_get_names(encoder);
@@ -2059,6 +2096,16 @@ static const char * const hb_empty_tune_names[] =
 
 const char* const* hb_video_encoder_get_tunes(int encoder)
 {
+    switch (encoder)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return NULL;
+        default:
+            break;
+    }
+
     if (encoder & HB_VCODEC_FFMPEG_MASK)
     {
         return hb_av_tune_get_names(encoder);
@@ -2111,6 +2158,12 @@ const char* const* hb_video_encoder_get_profiles(int encoder)
             return hb_x265_profile_names_12bit;
         case HB_VCODEC_X265_16BIT:
             return hb_h265_profile_names_16bit;
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+            return hb_rkmpp_h264_profile_names;
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+            return hb_rkmpp_h265_profile_names;
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return NULL;
 
 #if HB_PROJECT_FEATURE_VCE
         case HB_VCODEC_FFMPEG_VCE_H264:
@@ -2154,6 +2207,18 @@ const char* const* hb_video_encoder_get_profiles(int encoder)
 
 const char* const* hb_video_encoder_get_levels(int encoder)
 {
+    switch (encoder)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+            return hb_h264_level_names;
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+            return hb_h265_level_names;
+        case HB_VCODEC_FFMPEG_RKMPP_MJPEG:
+            return NULL;
+        default:
+            break;
+    }
+
 #if HB_PROJECT_FEATURE_QSV
     if (encoder & HB_VCODEC_QSV_MASK)
     {
@@ -4821,6 +4886,8 @@ static void job_clean( hb_job_t * job )
         job->encoder_profile = NULL;
         free(job->encoder_level);
         job->encoder_level = NULL;
+        free(job->encoder_rc_mode);
+        job->encoder_rc_mode = NULL;
         free(job->file);
         job->file = NULL;
 
@@ -4989,6 +5056,18 @@ void hb_job_set_encoder_level(hb_job_t *job, const char *level)
             level = NULL;
         }
         hb_update_str(&job->encoder_level, level);
+    }
+}
+
+void hb_job_set_encoder_rc_mode(hb_job_t *job, const char *rc_mode)
+{
+    if (job != NULL)
+    {
+        if (rc_mode == NULL || rc_mode[0] == 0)
+        {
+            rc_mode = NULL;
+        }
+        hb_update_str(&job->encoder_rc_mode, rc_mode);
     }
 }
 

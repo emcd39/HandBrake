@@ -1878,6 +1878,8 @@ static void hb_add_internal( hb_handle_t * h, hb_job_t * job, hb_list_t *list_pa
         job_copy->encoder_profile = strdup(job->encoder_profile);
     if (job->encoder_level != NULL)
         job_copy->encoder_level = strdup(job->encoder_level);
+    if (job->encoder_rc_mode != NULL)
+        job_copy->encoder_rc_mode = strdup(job->encoder_rc_mode);
     if (job->file != NULL)
         job_copy->file = strdup(job->file);
 
@@ -1923,6 +1925,8 @@ hb_job_t* hb_job_copy(hb_job_t * job)
         job_copy->encoder_profile = strdup(job->encoder_profile);
     if (job->encoder_level != NULL)
         job_copy->encoder_level = strdup(job->encoder_level);
+    if (job->encoder_rc_mode != NULL)
+        job_copy->encoder_rc_mode = strdup(job->encoder_rc_mode);
     if (job->file != NULL)
         job_copy->file = strdup(job->file);
 

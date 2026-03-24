@@ -75,6 +75,8 @@ static int apply_encoder_options(hb_job_t *job, AVCodecContext *context,
 
 static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts,
                                int vcodec, const char *encoder_level);
+static int apply_encoder_rc_mode(int vcodec, AVDictionary **av_opts,
+                                 const char *encoder_rc_mode);
 
 hb_work_object_t hb_encavcodec =
 {
@@ -1060,6 +1062,22 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
             }
         }
     }
+    else if (job->vcodec == HB_VCODEC_FFMPEG_RKMPP_H264)
+    {
+        if (job->encoder_profile != NULL && *job->encoder_profile &&
+            strcasecmp(job->encoder_profile, "auto"))
+        {
+            av_dict_set(&av_opts, "profile", job->encoder_profile, 0);
+        }
+    }
+    else if (job->vcodec == HB_VCODEC_FFMPEG_RKMPP_H265)
+    {
+        if (job->encoder_profile != NULL && *job->encoder_profile &&
+            strcasecmp(job->encoder_profile, "auto"))
+        {
+            av_dict_set(&av_opts, "profile", job->encoder_profile, 0);
+        }
+    }
 
     if( job->pass_id == HB_PASS_ENCODE_ANALYSIS ||
         job->pass_id == HB_PASS_ENCODE_FINAL )
@@ -1808,6 +1826,7 @@ static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts, 
         case HB_VCODEC_FFMPEG_VCE_H264:
         case HB_VCODEC_FFMPEG_NVENC_H264:
         case HB_VCODEC_FFMPEG_MF_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
             level_names = hb_h264_level_names;
             level_values = hb_h264_level_values;
             break;
@@ -1824,6 +1843,7 @@ static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts, 
         case HB_VCODEC_FFMPEG_NVENC_H265:
         case HB_VCODEC_FFMPEG_NVENC_H265_10BIT:
         case HB_VCODEC_FFMPEG_MF_H265:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
             level_names = hb_h265_level_names;
             level_values = hb_h265_level_values;
             break;
@@ -1886,7 +1906,9 @@ static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts, 
                     vcodec == HB_VCODEC_FFMPEG_NVENC_H265 ||
                     vcodec == HB_VCODEC_FFMPEG_NVENC_H265_10BIT ||
                     vcodec == HB_VCODEC_FFMPEG_NVENC_AV1 ||
-                    vcodec == HB_VCODEC_FFMPEG_NVENC_AV1_10BIT)
+                    vcodec == HB_VCODEC_FFMPEG_NVENC_AV1_10BIT ||
+                    vcodec == HB_VCODEC_FFMPEG_RKMPP_H264 ||
+                    vcodec == HB_VCODEC_FFMPEG_RKMPP_H265)
                 {
                     av_dict_set(av_opts, "level", level_names[i], 0);
                 }
@@ -1899,6 +1921,28 @@ static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts, 
         }
     }
 
+    return 0;
+}
+
+static int apply_encoder_rc_mode(int vcodec, AVDictionary **av_opts,
+                                 const char *encoder_rc_mode)
+{
+    switch (vcodec)
+    {
+        case HB_VCODEC_FFMPEG_RKMPP_H264:
+        case HB_VCODEC_FFMPEG_RKMPP_H265:
+            break;
+        default:
+            return 0;
+    }
+
+    if (encoder_rc_mode == NULL || encoder_rc_mode[0] == 0 ||
+        !strcasecmp(encoder_rc_mode, "auto"))
+    {
+        return 0;
+    }
+
+    av_dict_set(av_opts, "rc_mode", encoder_rc_mode, 0);
     return 0;
 }
 

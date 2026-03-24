@@ -308,6 +308,7 @@ static void queue_update_summary (GhbValue * queueDict, signal_user_data_t *ud)
     const char * enc_tune    = NULL;
     const char * enc_level   = NULL;
     const char * enc_profile = NULL;
+    const char * enc_rc_mode = NULL;
 
     if (hb_video_encoder_get_presets(video_encoder->codec) != NULL)
     {
@@ -329,6 +330,10 @@ static void queue_update_summary (GhbValue * queueDict, signal_user_data_t *ud)
         // The encoder supports levels
         enc_level   = ghb_dict_get_string(uiDict, "VideoLevel");
     }
+    if (hb_video_encoder_get_rate_controls(video_encoder->codec) != NULL)
+    {
+        enc_rc_mode = ghb_dict_get_string(uiDict, "VideoRCMode");
+    }
 
     sep = "\n";
     if (enc_preset != NULL)
@@ -349,6 +354,11 @@ static void queue_update_summary (GhbValue * queueDict, signal_user_data_t *ud)
     if (enc_level != NULL)
     {
         g_string_append_printf(str, _("%sLevel %s"), sep, enc_level);
+        sep = ", ";
+    }
+    if (enc_rc_mode != NULL && enc_rc_mode[0] != 0 && strcasecmp(enc_rc_mode, "auto"))
+    {
+        g_string_append_printf(str, _("%sRate Control %s"), sep, enc_rc_mode);
         sep = ", ";
     }
 

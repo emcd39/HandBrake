@@ -102,17 +102,40 @@ vcodec_changed_cb (GtkWidget *widget, gpointer data)
     ghb_update_ui_combo_box(ud, "VideoTune", NULL, FALSE);
     ghb_update_ui_combo_box(ud, "VideoProfile", NULL, FALSE);
     ghb_update_ui_combo_box(ud, "VideoLevel", NULL, FALSE);
+    ghb_update_ui_combo_box(ud, "VideoRCMode", NULL, FALSE);
     ghb_ui_update("VideoTune", ghb_int_value(0));
     ghb_ui_update("VideoProfile", ghb_int_value(0));
     ghb_ui_update("VideoLevel", ghb_int_value(0));
+    ghb_ui_update("VideoRCMode", ghb_int_value(0));
     ghb_ui_update("VideoOptionExtra", ghb_string_value(""));
 
     // Set the range of the preset slider
     int encoder = ghb_get_video_encoder(ud->settings);
+    if (hb_video_encoder_get_tunes(encoder) == NULL)
+    {
+        ghb_dict_set_string(ud->settings, "VideoTune", "");
+    }
+    if (hb_video_encoder_get_profiles(encoder) == NULL)
+    {
+        ghb_dict_set_string(ud->settings, "VideoProfile", "");
+    }
+    if (hb_video_encoder_get_levels(encoder) == NULL)
+    {
+        ghb_dict_set_string(ud->settings, "VideoLevel", "");
+    }
+    if (hb_video_encoder_get_rate_controls(encoder) == NULL)
+    {
+        ghb_dict_set_string(ud->settings, "VideoRCMode", "");
+    }
+
     GtkWidget *presetSlider = ghb_builder_widget("VideoPresetSlider");
     const char * const *video_presets;
     int count = 0;
     video_presets = hb_video_encoder_get_presets(encoder);
+    if (video_presets == NULL)
+    {
+        ghb_dict_set_string(ud->settings, "VideoPreset", "");
+    }
     while (video_presets && video_presets[count]) count++;
     gtk_widget_set_visible(presetSlider, count > 0);
     if (count)

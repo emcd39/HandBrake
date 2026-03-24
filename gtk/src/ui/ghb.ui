@@ -3822,6 +3822,27 @@ Overrides all other settings.</property>
                                   </object>
                                 </child>
                                 <child>
+                                  <object class="GtkLabel" id="VideoRCModeLabel">
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Rate Control:</property>
+                                    <layout>
+                                      <property name="row">4</property>
+                                      <property name="column">0</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkComboBox" id="VideoRCMode">
+                                    <property name="valign">center</property>
+                                    <property name="tooltip-text" translatable="yes">Sets the RKMPP rate control mode.</property>
+                                    <signal name="changed" handler="video_setting_changed_cb" swapped="no"/>
+                                    <layout>
+                                      <property name="row">4</property>
+                                      <property name="column">1</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="GtkBox" id="hbox43">
                                     <property name="spacing">5</property>
                                     <child>

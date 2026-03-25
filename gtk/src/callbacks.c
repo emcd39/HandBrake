@@ -3275,28 +3275,34 @@ vquality_type_changed_cb (GtkWidget *widget, gpointer data)
     gboolean is_rkmpp = encoder == HB_VCODEC_FFMPEG_RKMPP_H264 ||
                         encoder == HB_VCODEC_FFMPEG_RKMPP_H265;
 
-    if (is_rkmpp && !is_active)
-    {
-        return;
-    }
-
-    ghb_widget_to_setting(ud->settings, widget);
     if (is_rkmpp)
     {
-        const char *name = gtk_widget_get_name(widget);
-        if (!strcmp(name, "vquality_type_constant"))
+        const char *name;
+        gboolean cqp;
+        gboolean cbr;
+        gboolean vbr;
+
+        if (!is_active)
         {
-            ghb_dict_set_string(ud->settings, "VideoRCMode", "cqp");
+            return;
         }
-        else if (!strcmp(name, "vquality_type_cbr"))
-        {
-            ghb_dict_set_string(ud->settings, "VideoRCMode", "cbr");
-        }
-        else
-        {
-            ghb_dict_set_string(ud->settings, "VideoRCMode", "vbr");
-        }
+
+        name = gtk_widget_get_name(widget);
+        cqp = !strcmp(name, "vquality_type_constant");
+        cbr = !strcmp(name, "vquality_type_cbr");
+        vbr = !cqp && !cbr;
+
+        ghb_dict_set_bool(ud->settings, "vquality_type_constant", cqp);
+        ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", vbr);
+        ghb_dict_set_bool(ud->settings, "vquality_type_cbr", cbr);
+        ghb_dict_set_int(ud->settings, "VideoQualityType", cqp ? 2 : 1);
+        ghb_dict_set_string(ud->settings, "VideoRCMode",
+                            cqp ? "cqp" : (cbr ? "cbr" : "vbr"));
         ghb_update_rkmpp_rate_control(ud);
+    }
+    else
+    {
+        ghb_widget_to_setting(ud->settings, widget);
     }
     ghb_update_multipass(ud);
     ghb_clear_presets_selection(ud);

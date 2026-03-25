@@ -3292,13 +3292,6 @@ vquality_type_changed_cb (GtkWidget *widget, gpointer data)
         cbr = !strcmp(name, "vquality_type_cbr");
         vbr = !cqp && !cbr;
 
-        ghb_log("rkmpp-vquality: clicked=%s active=%d before rc_mode=%s cq=%d vbr=%d cbr=%d",
-                name,
-                is_active,
-                ghb_dict_get_string(ud->settings, "VideoRCMode"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_constant"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_cbr"));
 
         ghb_dict_set_bool(ud->settings, "vquality_type_constant", cqp);
         ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", vbr);
@@ -3306,11 +3299,6 @@ vquality_type_changed_cb (GtkWidget *widget, gpointer data)
         ghb_dict_set_int(ud->settings, "VideoQualityType", cqp ? 2 : 1);
         ghb_dict_set_string(ud->settings, "VideoRCMode",
                             cqp ? "cqp" : (cbr ? "cbr" : "vbr"));
-        ghb_log("rkmpp-vquality: applied rc_mode=%s cq=%d vbr=%d cbr=%d",
-                ghb_dict_get_string(ud->settings, "VideoRCMode"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_constant"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"),
-                ghb_dict_get_bool(ud->settings, "vquality_type_cbr"));
         ghb_update_rkmpp_rate_control(ud);
     }
     else

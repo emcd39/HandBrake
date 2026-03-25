@@ -787,6 +787,19 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
             av_dict_set(&av_opts, "rate_control", "quality", 0);
             av_dict_set(&av_opts, "quality", quality, 0);
         }
+        else if (job->vcodec == HB_VCODEC_FFMPEG_RKMPP_H264 ||
+                 job->vcodec == HB_VCODEC_FFMPEG_RKMPP_H265 ||
+                 job->vcodec == HB_VCODEC_FFMPEG_RKMPP_MJPEG)
+        {
+            char quality[7];
+            snprintf(quality, 7, "%d", (int)job->vquality);
+
+            context->bit_rate = 0;
+            av_dict_set(&av_opts, "rc_mode", "cqp", 0);
+            av_dict_set(&av_opts, "qp_init", quality, 0);
+
+            hb_log("encavcodec: encoding with rc=cqp, QP %s", quality);
+        }
         else if (job->vcodec == HB_VCODEC_FFMPEG_DNXHR ||
                  job->vcodec == HB_VCODEC_FFMPEG_DNXHR_10BIT)
         {

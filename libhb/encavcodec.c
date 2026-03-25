@@ -817,6 +817,14 @@ int encavcodecInit( hb_work_object_t * w, hb_job_t * job )
                     context->global_quality );
         }
     }
+
+    if (apply_encoder_rc_mode(job->vcodec, &av_opts, job->encoder_rc_mode))
+    {
+        av_free(context);
+        ret = 1;
+        goto done;
+    }
+
     context->width     = job->width;
     context->height    = job->height;
 
@@ -1940,6 +1948,8 @@ static int apply_encoder_level(AVCodecContext *context, AVDictionary **av_opts, 
 static int apply_encoder_rc_mode(int vcodec, AVDictionary **av_opts,
                                  const char *encoder_rc_mode)
 {
+    int rc_mode = -1;
+
     switch (vcodec)
     {
         case HB_VCODEC_FFMPEG_RKMPP_H264:
@@ -1955,7 +1965,25 @@ static int apply_encoder_rc_mode(int vcodec, AVDictionary **av_opts,
         return 0;
     }
 
-    av_dict_set(av_opts, "rc_mode", encoder_rc_mode, 0);
+    if (!strcasecmp(encoder_rc_mode, "vbr"))
+    {
+        rc_mode = 0;
+    }
+    else if (!strcasecmp(encoder_rc_mode, "cbr"))
+    {
+        rc_mode = 1;
+    }
+    else if (!strcasecmp(encoder_rc_mode, "cqp"))
+    {
+        rc_mode = 2;
+    }
+    else
+    {
+        hb_log("encavcodec: unknown RKMPP rc_mode %s", encoder_rc_mode);
+        return 0;
+    }
+
+    av_dict_set_int(av_opts, "rc_mode", rc_mode, 0);
     return 0;
 }
 

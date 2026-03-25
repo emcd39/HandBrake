@@ -74,9 +74,13 @@ video_encoder_is_rkmpp_rate_control(int encoder)
 static void
 set_quality_toggle_active(GtkWidget *widget, gboolean active)
 {
-    g_signal_handlers_block_by_func(widget, G_CALLBACK(vquality_type_changed_cb), NULL);
+    g_signal_handlers_block_matched(widget, G_SIGNAL_MATCH_FUNC,
+                                    0, 0, NULL,
+                                    G_CALLBACK(vquality_type_changed_cb), NULL);
     gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), active);
-    g_signal_handlers_unblock_by_func(widget, G_CALLBACK(vquality_type_changed_cb), NULL);
+    g_signal_handlers_unblock_matched(widget, G_SIGNAL_MATCH_FUNC,
+                                      0, 0, NULL,
+                                      G_CALLBACK(vquality_type_changed_cb), NULL);
 }
 
 void

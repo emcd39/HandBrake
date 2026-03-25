@@ -137,7 +137,7 @@ static int crop_scale_init(hb_filter_object_t * filter, hb_filter_init_t * init)
             }
             hb_dict_set_int(avsettings, "w", width);
             hb_dict_set_int(avsettings, "h", height);
-            hb_dict_set_string(avsettings, "format", "drm_prime");
+            hb_dict_set_string(avsettings, "format", av_get_pix_fmt_name(init->pix_fmt));
             hb_dict_set(avfilter, "vpp_rkrga", avsettings);
         }
         else

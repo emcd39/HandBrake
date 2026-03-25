@@ -75,7 +75,7 @@ static void
 set_quality_toggle_active(GtkWidget *widget, gboolean active)
 {
     ghb_log("rkmpp-vquality: sync widget=%s target_active=%d current_active=%d",
-            gtk_widget_get_name(widget),
+            ghb_get_setting_key(widget),
             active,
             gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)));
     g_signal_handlers_block_matched(widget, G_SIGNAL_MATCH_FUNC,
@@ -86,7 +86,7 @@ set_quality_toggle_active(GtkWidget *widget, gboolean active)
                                       0, 0, NULL,
                                       G_CALLBACK(vquality_type_changed_cb), NULL);
     ghb_log("rkmpp-vquality: synced widget=%s final_active=%d",
-            gtk_widget_get_name(widget),
+            ghb_get_setting_key(widget),
             gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)));
 }
 

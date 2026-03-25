@@ -3287,7 +3287,7 @@ vquality_type_changed_cb (GtkWidget *widget, gpointer data)
             return;
         }
 
-        name = gtk_widget_get_name(widget);
+        name = ghb_get_setting_key(widget);
         cqp = !strcmp(name, "vquality_type_constant");
         cbr = !strcmp(name, "vquality_type_cbr");
         vbr = !cqp && !cbr;

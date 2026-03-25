@@ -3493,8 +3493,8 @@ a variable framerate, &apos;Same as source&apos; will preserve it.</property>
                                 <property name="column-spacing">5</property>
                                 <property name="row-spacing">2</property>
                                 <property name="margin-top">12</property>
-                                <property name="margin-start">2</property>
-                                <property name="margin-end">2</property>
+                                <property name="margin-start">0</property>
+                                <property name="margin-end">0</property>
                                 <property name="hexpand">1</property>
                                 <child>
                                   <object class="GtkCheckButton" id="vquality_type_constant">

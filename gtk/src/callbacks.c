@@ -423,7 +423,6 @@ static GhbBinding widget_bindings[] =
     {"PictureDetelecine", "active-id", "custom10", "PictureDetelecineCustom", "visible"},
     {"PictureColorspacePreset", "active-id", "custom11", "PictureColorspaceCustom", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit", "x264FastDecode", "visible"},
-    {"VideoEncoder", "active-id", "h264_rkmpp|h265_rkmpp", "vquality_type_cbr", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit|x265|x265_10bit|x265_12bit|x265_16bit|mpeg4|mpeg2|VP8|VP9|VP9_10bit|qsv_av1|qsv_av1_10bit|qsv_h264|qsv_h265|qsv_h265_10bit|h264_rkmpp|h265_rkmpp|mjpeg_rkmpp", "VideoOptionExtraWindow", "visible"},
     {"VideoEncoder", "active-id", "svt_av1|svt_av1_10bit|x264|x264_10bit|x265|x265_10bit|x265_12bit|x265_16bit|mpeg4|mpeg2|VP8|VP9|VP9_10bit|qsv_av1|qsv_av1_10bit|qsv_h264|qsv_h265|qsv_h265_10bit|h264_rkmpp|h265_rkmpp|mjpeg_rkmpp", "VideoOptionExtraLabel", "visible"},
     {"auto_name", "active", NULL, "autoname_box", "sensitive"},

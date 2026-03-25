@@ -74,6 +74,10 @@ video_encoder_is_rkmpp_rate_control(int encoder)
 static void
 set_quality_toggle_active(GtkWidget *widget, gboolean active)
 {
+    ghb_log("rkmpp-vquality: sync widget=%s target_active=%d current_active=%d",
+            gtk_widget_get_name(widget),
+            active,
+            gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)));
     g_signal_handlers_block_matched(widget, G_SIGNAL_MATCH_FUNC,
                                     0, 0, NULL,
                                     G_CALLBACK(vquality_type_changed_cb), NULL);
@@ -81,6 +85,9 @@ set_quality_toggle_active(GtkWidget *widget, gboolean active)
     g_signal_handlers_unblock_matched(widget, G_SIGNAL_MATCH_FUNC,
                                       0, 0, NULL,
                                       G_CALLBACK(vquality_type_changed_cb), NULL);
+    ghb_log("rkmpp-vquality: synced widget=%s final_active=%d",
+            gtk_widget_get_name(widget),
+            gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)));
 }
 
 void
@@ -150,6 +157,16 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     cqp = !strcasecmp(mode, "cqp");
     cbr = !strcasecmp(mode, "cbr");
     vbr = !cqp && !cbr;
+
+    ghb_log("rkmpp-vquality: update encoder=%s rc_mode=%s cq=%d vbr=%d cbr=%d settings[cq=%d vbr=%d cbr=%d]",
+            hb_video_encoder_get_name(encoder),
+            mode,
+            cqp,
+            vbr,
+            cbr,
+            ghb_dict_get_bool(ud->settings, "vquality_type_constant"),
+            ghb_dict_get_bool(ud->settings, "vquality_type_bitrate"),
+            ghb_dict_get_bool(ud->settings, "vquality_type_cbr"));
 
     GhbValue *bitrate_value = ghb_dict_get_value(ud->settings, "VideoAvgBitrate");
     if (bitrate_value != NULL)

@@ -91,5 +91,6 @@ void ghb_break_duration(gint64 duration, gint *hh, gint *mm, gint *ss);
 GtkFileFilter *ghb_add_file_filter(GtkFileChooser *chooser,
                                    const char *name, const char *id);
 void ghb_check_send_to_available (void);
+void vquality_type_changed_cb(GtkWidget *widget, gpointer data);
 
 G_END_DECLS

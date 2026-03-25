@@ -71,6 +71,14 @@ video_encoder_is_rkmpp_rate_control(int encoder)
            encoder == HB_VCODEC_FFMPEG_RKMPP_H265;
 }
 
+static void
+set_quality_toggle_active(GtkWidget *widget, gboolean active)
+{
+    g_signal_handlers_block_by_func(widget, G_CALLBACK(vquality_type_changed_cb), NULL);
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), active);
+    g_signal_handlers_unblock_by_func(widget, G_CALLBACK(vquality_type_changed_cb), NULL);
+}
+
 void
 ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
 {
@@ -109,8 +117,8 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
                                ghb_dict_get_bool(ud->settings, "vquality_type_cbr");
         ghb_dict_set_bool(ud->settings, "vquality_type_cbr", FALSE);
         ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", use_bitrate);
-        ghb_ui_update("vquality_type_cbr", ghb_boolean_value(FALSE));
-        ghb_ui_update("vquality_type_bitrate", ghb_boolean_value(use_bitrate));
+        set_quality_toggle_active(cbr_button, FALSE);
+        set_quality_toggle_active(vbr_button, use_bitrate);
         gtk_widget_set_sensitive(bitrate, use_bitrate);
         gtk_widget_set_sensitive(bitrate_cbr, FALSE);
         gtk_widget_set_sensitive(placeholder, use_bitrate);
@@ -149,9 +157,9 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     ghb_dict_set_bool(ud->settings, "vquality_type_bitrate", vbr);
     ghb_dict_set_bool(ud->settings, "vquality_type_cbr", cbr);
 
-    ghb_ui_update("vquality_type_constant", ghb_boolean_value(cqp));
-    ghb_ui_update("vquality_type_bitrate", ghb_boolean_value(vbr));
-    ghb_ui_update("vquality_type_cbr", ghb_boolean_value(cbr));
+    set_quality_toggle_active(cqp_button, cqp);
+    set_quality_toggle_active(vbr_button, vbr);
+    set_quality_toggle_active(cbr_button, cbr);
 
     gtk_widget_set_sensitive(bitrate, vbr);
     gtk_widget_set_sensitive(bitrate_cbr, cbr);

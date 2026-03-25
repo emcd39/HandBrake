@@ -73,19 +73,6 @@ static int crop_scale_init(hb_filter_object_t * filter, hb_filter_init_t * init)
     hb_dict_extract_int(&right, settings, "crop-right");
     cropped_width  = init->geometry.width - left - right;
     cropped_height = init->geometry.height - top - bottom;
-    if (top > 0 || bottom > 0 || left > 0 || right > 0)
-    {
-        hb_dict_t * avfilter   = hb_dict_init();
-        hb_dict_t * avsettings = hb_dict_init();
-
-        hb_dict_set_int(avsettings, "x", left);
-        hb_dict_set_int(avsettings, "y", top);
-        hb_dict_set_int(avsettings, "w", cropped_width);
-        hb_dict_set_int(avsettings, "h", cropped_height);
-        hb_dict_set(avfilter, "crop", avsettings);
-        hb_value_array_append(avfilters, avfilter);
-    }
-
     width  = cropped_width;
     height = cropped_height;
 
@@ -95,6 +82,21 @@ static int crop_scale_init(hb_filter_object_t * filter, hb_filter_init_t * init)
 
     hb_dict_t * avfilter   = hb_dict_init();
     hb_dict_t * avsettings = hb_dict_init();
+
+    if (init->hw_pix_fmt != AV_PIX_FMT_DRM_PRIME &&
+        (top > 0 || bottom > 0 || left > 0 || right > 0))
+    {
+        hb_dict_t * crop_filter   = hb_dict_init();
+        hb_dict_t * crop_settings = hb_dict_init();
+
+        hb_dict_set_int(crop_settings, "x", left);
+        hb_dict_set_int(crop_settings, "y", top);
+        hb_dict_set_int(crop_settings, "w", cropped_width);
+        hb_dict_set_int(crop_settings, "h", cropped_height);
+        hb_dict_set(crop_filter, "crop", crop_settings);
+        hb_value_array_append(avfilters, crop_filter);
+    }
+
 
 #if HB_PROJECT_FEATURE_QSV && (defined( _WIN32 ) || defined( __MINGW32__ ))
     if (init->hw_pix_fmt == AV_PIX_FMT_QSV)
@@ -124,6 +126,21 @@ static int crop_scale_init(hb_filter_object_t * filter, hb_filter_init_t * init)
     else
 #endif
     {
+        if (init->hw_pix_fmt == AV_PIX_FMT_DRM_PRIME)
+        {
+            if (top > 0 || bottom > 0 || left > 0 || right > 0)
+            {
+                hb_dict_set_int(avsettings, "cx", left);
+                hb_dict_set_int(avsettings, "cy", top);
+                hb_dict_set_int(avsettings, "cw", cropped_width);
+                hb_dict_set_int(avsettings, "ch", cropped_height);
+            }
+            hb_dict_set_int(avsettings, "w", width);
+            hb_dict_set_int(avsettings, "h", height);
+            hb_dict_set_string(avsettings, "format", "drm_prime");
+            hb_dict_set(avfilter, "vpp_rkrga", avsettings);
+        }
+        else
         if (init->hw_pix_fmt == AV_PIX_FMT_CUDA)
         {
             hb_dict_set_int(avsettings, "w", width);

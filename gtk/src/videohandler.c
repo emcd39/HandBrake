@@ -96,11 +96,14 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
     GtkWidget *cbr_button = ghb_builder_widget("vquality_type_cbr");
     GtkWidget *bitrate = ghb_builder_widget("VideoAvgBitrate");
     GtkWidget *bitrate_cbr = ghb_builder_widget("VideoAvgBitrateCBR");
+    GtkWidget *placeholder = ghb_builder_widget("placeholder_label");
+    GtkWidget *placeholder_cbr = ghb_builder_widget("placeholder_label_cbr");
     gboolean quality_supported = hb_video_quality_is_supported(encoder);
     gboolean bitrate_supported = hb_video_bitrate_is_supported(encoder);
 
     gtk_widget_set_visible(cbr_button, is_rkmpp);
     gtk_widget_set_visible(bitrate_cbr, is_rkmpp);
+    gtk_widget_set_visible(placeholder_cbr, is_rkmpp);
     gtk_check_button_set_label(GTK_CHECK_BUTTON(cqp_button),
                                _("Constant Quality:"));
     gtk_check_button_set_label(GTK_CHECK_BUTTON(vbr_button),
@@ -122,6 +125,8 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
         set_quality_toggle_active(vbr_button, use_bitrate);
         gtk_widget_set_sensitive(bitrate, use_bitrate);
         gtk_widget_set_sensitive(bitrate_cbr, FALSE);
+        gtk_widget_set_sensitive(placeholder, use_bitrate);
+        gtk_widget_set_sensitive(placeholder_cbr, FALSE);
         return;
     }
 
@@ -163,6 +168,8 @@ ghb_update_rkmpp_rate_control(signal_user_data_t *ud)
 
     gtk_widget_set_sensitive(bitrate, vbr);
     gtk_widget_set_sensitive(bitrate_cbr, cbr);
+    gtk_widget_set_sensitive(placeholder, vbr);
+    gtk_widget_set_sensitive(placeholder_cbr, cbr);
 }
 
 void

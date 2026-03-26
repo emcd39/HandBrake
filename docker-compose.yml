@@ -1,6 +1,6 @@
 services:
   handbrake-rk3588:
-    image: ghcr.io/emcd39/handbrake-rk3588:latest
+    image: emcd39/handbrake-rk3588:latest
     container_name: handbrake-rk3588
     restart: unless-stopped
 

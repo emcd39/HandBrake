@@ -105,14 +105,17 @@ jobs:
           fi
 
           DOCKER_IMAGE_VERSION="${SOURCE_SHA::7}"
-          TAGS="${DOCKERHUB_IMAGE_NAME}:sha-${SOURCE_SHA::7},${GHCR_IMAGE_NAME}:sha-${SOURCE_SHA::7}"
+          DOCKERHUB_TAGS="${DOCKERHUB_IMAGE_NAME}:sha-${SOURCE_SHA::7}"
+          GHCR_TAGS="${GHCR_IMAGE_NAME}:sha-${SOURCE_SHA::7}"
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
-            TAGS="${TAGS},${DOCKERHUB_IMAGE_NAME}:latest,${GHCR_IMAGE_NAME}:latest"
+            DOCKERHUB_TAGS="${DOCKERHUB_TAGS},${DOCKERHUB_IMAGE_NAME}:latest"
+            GHCR_TAGS="${GHCR_TAGS},${GHCR_IMAGE_NAME}:latest"
           fi
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -n "${{ inputs.image_tag }}" ]]; then
-            TAGS="${TAGS},${DOCKERHUB_IMAGE_NAME}:${{ inputs.image_tag }},${GHCR_IMAGE_NAME}:${{ inputs.image_tag }}"
+            DOCKERHUB_TAGS="${DOCKERHUB_TAGS},${DOCKERHUB_IMAGE_NAME}:${{ inputs.image_tag }}"
+            GHCR_TAGS="${GHCR_TAGS},${GHCR_IMAGE_NAME}:${{ inputs.image_tag }}"
             DOCKER_IMAGE_VERSION="${{ inputs.image_tag }}"
           fi
 
@@ -122,7 +125,9 @@ jobs:
             echo "source_tag=${SOURCE_TAG}"
             echo "push_image=${PUSH_IMAGE}"
             echo "docker_image_version=${DOCKER_IMAGE_VERSION}"
-            echo "tags=${TAGS}"
+            echo "dockerhub_tags=${DOCKERHUB_TAGS}"
+            echo "ghcr_tags=${GHCR_TAGS}"
+            echo "tags=${DOCKERHUB_TAGS},${GHCR_TAGS}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Download release bundles
@@ -175,19 +180,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build image
+      - name: Build and push GHCR image
+        if: steps.meta.outputs.push_image == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
           platforms: linux/arm64
-          push: ${{ steps.meta.outputs.push_image == 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          push: true
+          tags: ${{ steps.meta.outputs.ghcr_tags }}
           build-args: |
             DOCKER_IMAGE_VERSION=${{ steps.meta.outputs.docker_image_version }}
             HANDBRAKE_VERSION=${{ steps.meta.outputs.docker_image_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build and push Docker Hub image
+        if: steps.meta.outputs.push_image == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.dockerhub_tags }}
+          provenance: false
+          sbom: false
+          build-args: |
+            DOCKER_IMAGE_VERSION=${{ steps.meta.outputs.docker_image_version }}
+            HANDBRAKE_VERSION=${{ steps.meta.outputs.docker_image_version }}
+          cache-from: type=gha
 
       - name: Export image as artifact
         if: steps.meta.outputs.push_image != 'true'

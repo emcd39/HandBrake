@@ -3496,7 +3496,6 @@ a variable framerate, &apos;Same as source&apos; will preserve it.</property>
                                 <property name="margin-start">0</property>
                                 <property name="margin-end">0</property>
                                 <property name="hexpand">1</property>
-                                <property name="width-request">242</property>
                                 <child>
                                   <object class="GtkCheckButton" id="vquality_type_constant">
                                     <property name="label" translatable="yes">Constant Quality:</property>

@@ -108,7 +108,7 @@ jobs:
           DOCKERHUB_TAGS="${DOCKERHUB_IMAGE_NAME}:sha-${SOURCE_SHA::7}"
           GHCR_TAGS="${GHCR_IMAGE_NAME}:sha-${SOURCE_SHA::7}"
 
-          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
+          if [[ "${PUSH_IMAGE}" == "true" ]]; then
             DOCKERHUB_TAGS="${DOCKERHUB_TAGS},${DOCKERHUB_IMAGE_NAME}:latest"
             GHCR_TAGS="${GHCR_TAGS},${GHCR_IMAGE_NAME}:latest"
           fi

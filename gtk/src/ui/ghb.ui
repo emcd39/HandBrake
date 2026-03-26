@@ -3531,6 +3531,7 @@ a variable framerate, &apos;Same as source&apos; will preserve it.</property>
                                     <layout>
                                       <property name="row">0</property>
                                       <property name="column">1</property>
+                                      <property name="column-span">2</property>
                                     </layout>
                                   </object>
                                 </child>
@@ -3559,7 +3560,7 @@ These encoders do not have a lossless mode.</property>
                                     <layout>
                                       <property name="row">1</property>
                                       <property name="column">0</property>
-                                      <property name="column-span">2</property>
+                                      <property name="column-span">3</property>
                                     </layout>
                                   </object>
                                 </child>
@@ -3594,6 +3595,7 @@ to limit instantaneous bitrate, look into x264&apos;s vbv-bufsize and vbv-maxrat
                                     <layout>
                                       <property name="row">2</property>
                                       <property name="column">1</property>
+                                      <property name="column-span">2</property>
                                     </layout>
                                   </object>
                                 </child>
@@ -3623,6 +3625,7 @@ to limit instantaneous bitrate, look into x264&apos;s vbv-bufsize and vbv-maxrat
                                     <layout>
                                       <property name="row">3</property>
                                       <property name="column">1</property>
+                                      <property name="column-span">2</property>
                                     </layout>
                                   </object>
                                 </child>
@@ -3656,7 +3659,7 @@ to make bitrate allocation decisions.</property>
                                     <layout>
                                       <property name="row">4</property>
                                       <property name="column">0</property>
-                                      <property name="column-span">2</property>
+                                      <property name="column-span">3</property>
                                     </layout>
                                   </object>
                                 </child>
